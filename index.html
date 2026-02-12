@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ثبت نام | Mafia Sun</title>
     <style>
+        /* استایل‌های شما مثل قبل */
         * {
             margin: 0;
             padding: 0;
@@ -255,11 +256,11 @@
                 padding: 30px 25px;
                 border-radius: 20px;
             }
-            
+
             .logo h1 {
                 font-size: 2rem;
             }
-            
+
             .form-group input {
                 padding: 15px;
             }
@@ -295,7 +296,7 @@
                                pattern="09[0-9]{9}" maxlength="11" dir="ltr">
                         <div class="error-message" id="login-phone-error"></div>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="login-password">
                             <i class="fas fa-lock"></i> رمز عبور
@@ -303,7 +304,7 @@
                         <input type="password" id="login-password" placeholder="رمز عبور خود را وارد کنید" required>
                         <div class="error-message" id="login-password-error"></div>
                     </div>
-                    
+
                     <button type="submit" class="submit-btn">
                         <i class="fas fa-door-open"></i> ورود و شروع بازی
                     </button>
@@ -320,7 +321,7 @@
                                pattern="09[0-9]{9}" maxlength="11" dir="ltr">
                         <div class="error-message" id="signup-phone-error"></div>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="display-name">
                             <i class="fas fa-user"></i> نام نمایشی
@@ -328,7 +329,7 @@
                         <input type="text" id="display-name" placeholder="نامی که در بازی نمایش داده می‌شود" required maxlength="30">
                         <div class="error-message" id="display-name-error"></div>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="signup-password">
                             <i class="fas fa-key"></i> رمز عبور
@@ -336,7 +337,7 @@
                         <input type="password" id="signup-password" placeholder="حداقل ۸ کاراکتر" required minlength="8">
                         <div class="error-message" id="signup-password-error"></div>
                     </div>
-                    
+
                     <div class="form-group">
                         <label>
                             <i class="fas fa-user-clock"></i> رده سنی
@@ -349,7 +350,7 @@
                         <div class="age-label">سال</div>
                         <input type="hidden" id="age" name="age" value="18">
                     </div>
-                    
+
                     <button type="submit" class="submit-btn">
                         <i class="fas fa-handshake"></i> ثبت‌نام و شروع بازی
                     </button>
@@ -359,22 +360,24 @@
     </div>
 
     <script>
-        // آدرس صفحه بازی (ریپازیتوری دوم)
+        // ========== آدرس صفحه بازی ==========
         const GAME_PAGE_URL = 'https://admin161723.github.io/Mafia_Sun1/';
         
+        // ========== شماره و رمز سازنده - اینجا تعریف شده ==========
+        const CREATOR_PHONE = '09904844031';
+        const CREATOR_PASSWORD = 'Admin16172-matin-1000';
+
         // مدیریت تب‌ها
         const tabs = document.querySelectorAll('.tab');
         const sections = document.querySelectorAll('.form-section');
-        
+
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
                 tabs.forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
-                
                 sections.forEach(section => section.classList.remove('active'));
                 const tabId = tab.getAttribute('data-tab');
                 document.getElementById(`${tabId}-section`).classList.add('active');
-                
                 clearAllErrors();
             });
         });
@@ -424,118 +427,139 @@
             return phoneRegex.test(phone);
         }
 
-        // ذخیره اطلاعات کاربر
+        // ========== مهم: ذخیره اطلاعات برای پروژه دوم ==========
         function saveUserData(userData) {
+            // پاک کردن اطلاعات قبلی
+            localStorage.clear();
+            
+            // ذخیره شماره و رمز
+            localStorage.setItem('mafiaUserPhone', userData.phone);
+            localStorage.setItem('mafiaUserPassword', userData.password);
+            
+            // بررسی سازنده بودن
+            if (userData.phone === CREATOR_PHONE && userData.password === CREATOR_PASSWORD) {
+                // ✅ کاربر سازنده
+                localStorage.setItem('mafiaUserId', '1');
+                localStorage.setItem('mafiaIsCreator', 'true');
+                localStorage.setItem('mafiaUserName', 'سازنده');
+                localStorage.setItem('mafiaUserGems', 'Infinity');
+                localStorage.setItem('mafiaUserCoins', 'Infinity');
+                localStorage.setItem('mafiaOwnedAvatars', JSON.stringify(['avatar1', 'avatar2', 'ninja', 'samurai']));
+                localStorage.setItem('mafiaEditCount', '0');
+            } else {
+                // 👤 کاربر عادی
+                const userId = Math.floor(100000 + Math.random() * 9000000);
+                localStorage.setItem('mafiaUserId', userId.toString());
+                localStorage.setItem('mafiaIsCreator', 'false');
+                localStorage.setItem('mafiaUserName', userData.displayName || `بازیکن_${userData.phone.substring(7)}`);
+                localStorage.setItem('mafiaUserGems', '100');
+                localStorage.setItem('mafiaUserCoins', '600');
+                localStorage.setItem('mafiaOwnedAvatars', JSON.stringify(['avatar1', 'avatar2']));
+                localStorage.setItem('mafiaEditCount', '0');
+                localStorage.setItem('mafiaUserLevel', '1');
+            }
+            
+            // ذخیره اطلاعات اضافی
             localStorage.setItem('mafiaSun_user', JSON.stringify(userData));
-            localStorage.setItem('mafiaSun_lastLogin', new Date().toISOString());
             localStorage.setItem('mafiaSun_isLoggedIn', 'true');
+            localStorage.setItem('mafiaSun_lastLogin', new Date().toISOString());
         }
 
-        // اعتبارسنجی فرم ورود
+        // ========== فرم ورود ==========
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
             clearAllErrors();
-            
-            const phone = document.getElementById('login-phone').value;
-            const password = document.getElementById('login-password').value;
-            
+
+            const phone = document.getElementById('login-phone').value.trim();
+            const password = document.getElementById('login-password').value.trim();
+
             let isValid = true;
-            
+
             if (!validatePhone(phone)) {
-                showError('login-phone-error', 'شماره موبایل معتبر نیست (مثال: 09123456789)');
+                showError('login-phone-error', 'شماره موبایل معتبر نیست');
                 isValid = false;
             }
-            
+
             if (password.length < 6) {
                 showError('login-password-error', 'رمز عبور باید حداقل ۶ کاراکتر باشد');
                 isValid = false;
             }
-            
+
             if (isValid) {
                 const submitBtn = this.querySelector('.submit-btn');
-                const originalText = submitBtn.innerHTML;
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> در حال ورود...';
                 submitBtn.disabled = true;
-                
+
                 setTimeout(() => {
                     const userData = {
                         phone: phone,
+                        password: password,
                         displayName: `بازیکن_${phone.substring(7)}`,
-                        age: 18,
-                        isGuest: true,
-                        registerDate: new Date().toISOString(),
-                        lastActivity: new Date().toISOString(),
                         source: 'login'
                     };
-                    
+
                     saveUserData(userData);
-                    
-                    // انتقال به صفحه بازی
                     window.location.href = GAME_PAGE_URL;
-                }, 1000);
+                }, 800);
             }
         });
 
-        // اعتبارسنجی فرم ثبت‌نام
+        // ========== فرم ثبت‌نام ==========
         document.getElementById('signupForm').addEventListener('submit', function(e) {
             e.preventDefault();
             clearAllErrors();
-            
-            const phone = document.getElementById('signup-phone').value;
-            const displayName = document.getElementById('display-name').value;
-            const password = document.getElementById('signup-password').value;
+
+            const phone = document.getElementById('signup-phone').value.trim();
+            const displayName = document.getElementById('display-name').value.trim();
+            const password = document.getElementById('signup-password').value.trim();
             const age = ageInput.value;
-            
+
             let isValid = true;
-            
+
             if (!validatePhone(phone)) {
-                showError('signup-phone-error', 'شماره موبایل معتبر نیست (مثال: 09123456789)');
+                showError('signup-phone-error', 'شماره موبایل معتبر نیست');
                 isValid = false;
             }
-            
+
             if (displayName.length < 3) {
                 showError('display-name-error', 'نام نمایشی باید حداقل ۳ کاراکتر باشد');
                 isValid = false;
             }
-            
+
             if (password.length < 8) {
                 showError('signup-password-error', 'رمز عبور باید حداقل ۸ کاراکتر باشد');
                 isValid = false;
             }
-            
+
             if (isValid) {
                 const submitBtn = this.querySelector('.submit-btn');
-                const originalText = submitBtn.innerHTML;
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> در حال ثبت‌نام...';
                 submitBtn.disabled = true;
-                
+
                 setTimeout(() => {
                     const userData = {
                         phone: phone,
+                        password: password,
                         displayName: displayName,
                         age: parseInt(age),
-                        registerDate: new Date().toISOString(),
-                        lastActivity: new Date().toISOString(),
-                        score: 0,
-                        level: 1,
                         source: 'signup'
                     };
-                    
+
                     saveUserData(userData);
-                    
-                    // انتقال به صفحه بازی
                     window.location.href = GAME_PAGE_URL;
-                }, 1000);
+                }, 800);
             }
         });
 
-        document.querySelectorAll('input[type="tel"]').forEach(input => {
-            input.addEventListener('input', function(e) {
-                this.value = this.value.replace(/[^\d]/g, '');
+        // پاکسازی خطاها
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', function() {
                 const errorId = this.id + '-error';
-                hideError(errorId);
+                if (document.getElementById(errorId)) {
+                    hideError(errorId);
+                }
             });
         });
     </script>
 </body>
-</html>
+</html> 
