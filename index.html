@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ثبت نام | Mafia Sun</title>
     <style>
-        /* استایل‌های شما مثل قبل */
         * {
             margin: 0;
             padding: 0;
@@ -32,6 +31,7 @@
             --primary-color: #FF9800;
             --primary-light: rgba(255, 152, 0, 0.2);
             --mafia-red: #D32F2F;
+            --success-green: #4CAF50;
         }
 
         .container {
@@ -249,6 +249,73 @@
             font-size: 0.85rem;
             margin-top: 8px;
             display: none;
+            text-align: center;
+            background: rgba(211, 47, 47, 0.1);
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid var(--mafia-red);
+        }
+
+        .success-message {
+            color: var(--success-green);
+            font-size: 0.85rem;
+            margin-top: 8px;
+            display: none;
+            text-align: center;
+            background: rgba(76, 175, 80, 0.1);
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid var(--success-green);
+        }
+
+        .info-box {
+            background: rgba(255, 152, 0, 0.1);
+            border: 1px solid var(--primary-color);
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            color: var(--primary-color);
+            text-align: center;
+        }
+
+        .info-box i {
+            margin-left: 5px;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 10000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid var(--primary-color);
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        .loading-text {
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         @media (max-width: 480px) {
@@ -270,6 +337,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text" id="loadingText">در حال پردازش...</div>
+    </div>
+
     <div class="container">
         <div class="auth-card">
             <div class="logo">
@@ -277,11 +349,15 @@
                 <p>توسعه دهنده شرکت سازیتون</p>
             </div>
 
+            <div class="info-box" id="creatorInfo" style="display: none;">
+                <i class="fas fa-crown"></i> شما با شماره سازنده وارد شده‌اید
+            </div>
+
             <div class="tabs">
-                <button class="tab active" data-tab="login">
+                <button class="tab active" id="loginTab">
                     <i class="fas fa-user-secret"></i> ورود
                 </button>
-                <button class="tab" data-tab="signup">
+                <button class="tab" id="signupTab">
                     <i class="fas fa-crown"></i> ثبت‌نام
                 </button>
             </div>
@@ -293,7 +369,7 @@
                             <i class="fas fa-mobile-alt"></i> شماره موبایل
                         </label>
                         <input type="tel" id="login-phone" placeholder="مثال: 09123456789" required 
-                               pattern="09[0-9]{9}" maxlength="11" dir="ltr">
+                               pattern="09[0-9]{9}" maxlength="11" dir="ltr" autocomplete="off">
                         <div class="error-message" id="login-phone-error"></div>
                     </div>
 
@@ -301,11 +377,11 @@
                         <label for="login-password">
                             <i class="fas fa-lock"></i> رمز عبور
                         </label>
-                        <input type="password" id="login-password" placeholder="رمز عبور خود را وارد کنید" required>
+                        <input type="password" id="login-password" placeholder="رمز عبور خود را وارد کنید" required autocomplete="off">
                         <div class="error-message" id="login-password-error"></div>
                     </div>
 
-                    <button type="submit" class="submit-btn">
+                    <button type="submit" class="submit-btn" id="loginBtn">
                         <i class="fas fa-door-open"></i> ورود و شروع بازی
                     </button>
                 </form>
@@ -318,7 +394,7 @@
                             <i class="fas fa-mobile-alt"></i> شماره موبایل
                         </label>
                         <input type="tel" id="signup-phone" placeholder="مثال: 09123456789" required 
-                               pattern="09[0-9]{9}" maxlength="11" dir="ltr">
+                               pattern="09[0-9]{9}" maxlength="11" dir="ltr" autocomplete="off">
                         <div class="error-message" id="signup-phone-error"></div>
                     </div>
 
@@ -326,7 +402,7 @@
                         <label for="display-name">
                             <i class="fas fa-user"></i> نام نمایشی
                         </label>
-                        <input type="text" id="display-name" placeholder="نامی که در بازی نمایش داده می‌شود" required maxlength="30">
+                        <input type="text" id="display-name" placeholder="نامی که در بازی نمایش داده می‌شود" required maxlength="30" autocomplete="off">
                         <div class="error-message" id="display-name-error"></div>
                     </div>
 
@@ -334,7 +410,7 @@
                         <label for="signup-password">
                             <i class="fas fa-key"></i> رمز عبور
                         </label>
-                        <input type="password" id="signup-password" placeholder="حداقل ۸ کاراکتر" required minlength="8">
+                        <input type="password" id="signup-password" placeholder="حداقل ۸ کاراکتر" required minlength="8" autocomplete="off">
                         <div class="error-message" id="signup-password-error"></div>
                     </div>
 
@@ -351,215 +427,453 @@
                         <input type="hidden" id="age" name="age" value="18">
                     </div>
 
-                    <button type="submit" class="submit-btn">
+                    <button type="submit" class="submit-btn" id="signupBtn">
                         <i class="fas fa-handshake"></i> ثبت‌نام و شروع بازی
                     </button>
                 </form>
             </div>
+
+            <div class="success-message" id="globalSuccess"></div>
+            <div class="error-message" id="globalError"></div>
         </div>
     </div>
 
-    <script>
-        // ========== آدرس صفحه بازی ==========
-        const GAME_PAGE_URL = 'https://admin161723.github.io/Mafia_Sun1/';
+    <script src="auth.js"></script>
+<script>
+// ========== auth.js ==========
+// ========== آدرس صفحه بازی ==========
+const GAME_PAGE_URL = 'https://admin161723.github.io/Mafia_Sun1/';
+
+// ========== شماره و رمز سازنده ==========
+const CREATOR_PHONE = '09904844031';
+const CREATOR_PASSWORD = 'Admin16172-matin-1000';
+
+// ========== کلیدهای ذخیره‌سازی ==========
+const STORAGE_KEYS = {
+    USERS: 'mafiaSun_users',
+    CURRENT_USER: 'mafiaSun_currentUser',
+    USER_DATA: 'mafiaSun_userData'
+};
+
+// ========== مدیریت کاربران ==========
+class UserManager {
+    constructor() {
+        this.users = this.loadUsers();
+        this.currentUser = null;
+        this.ensureCreatorExists();
+    }
+
+    ensureCreatorExists() {
+        if (!this.isPhoneExists(CREATOR_PHONE)) {
+            const creatorUser = {
+                id: 1,
+                phone: CREATOR_PHONE,
+                password: CREATOR_PASSWORD,
+                displayName: 'سازنده بازی',
+                age: 30,
+                isCreator: true,
+                registeredAt: new Date().toISOString(),
+                lastLogin: null,
+                stats: {
+                    wins: 0,
+                    losses: 0,
+                    gamesPlayed: 0,
+                    totalHours: 0
+                },
+                settings: {
+                    avatar: 'avatar1',
+                    ownedAvatars: ['avatar1', 'avatar2', 'ninja', 'samurai', 'avatar5', 'avatar6', 'avatar7', 'avatar8'],
+                    gems: Infinity,
+                    coins: Infinity,
+                    editCount: 0
+                }
+            };
+            this.users[CREATOR_PHONE] = creatorUser;
+            this.saveUsers();
+            console.log('✅ کاربر سازنده به لیست اضافه شد');
+        }
+    }
+
+    loadUsers() {
+        try {
+            const savedUsers = localStorage.getItem(STORAGE_KEYS.USERS);
+            return savedUsers ? JSON.parse(savedUsers) : {};
+        } catch (e) {
+            console.error('خطا در بارگذاری کاربران:', e);
+            return {};
+        }
+    }
+
+    saveUsers() {
+        try {
+            localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(this.users));
+            console.log('✅ لیست کاربران ذخیره شد');
+        } catch (e) {
+            console.error('خطا در ذخیره کاربران:', e);
+        }
+    }
+
+    isPhoneExists(phone) {
+        return this.users.hasOwnProperty(phone);
+    }
+
+    register(phone, password, displayName, age) {
+        if (this.isPhoneExists(phone)) {
+            return { success: false, message: '❌ این شماره موبایل قبلاً ثبت‌نام کرده است' };
+        }
+
+        const isCreator = (phone === CREATOR_PHONE && password === CREATOR_PASSWORD);
+        const userId = isCreator ? 1 : (Date.now() + Math.floor(Math.random() * 1000));
         
-        // ========== شماره و رمز سازنده - اینجا تعریف شده ==========
-        const CREATOR_PHONE = '09904844031';
-        const CREATOR_PASSWORD = 'Admin16172-matin-1000';
+        const userData = {
+            id: userId,
+            phone: phone,
+            password: password,
+            displayName: isCreator ? 'سازنده بازی' : (displayName || `بازیکن_${phone.substring(7)}`),
+            age: age || 18,
+            isCreator: isCreator,
+            registeredAt: new Date().toISOString(),
+            lastLogin: null,
+            stats: {
+                wins: 0,
+                losses: 0,
+                gamesPlayed: 0,
+                totalHours: 0
+            },
+            settings: {
+                avatar: 'avatar1',
+                ownedAvatars: isCreator ? 
+                    ['avatar1', 'avatar2', 'ninja', 'samurai', 'avatar5', 'avatar6', 'avatar7', 'avatar8'] : 
+                    ['avatar1', 'avatar2'],
+                gems: isCreator ? Infinity : 100,
+                coins: isCreator ? Infinity : 600,
+                editCount: 0
+            }
+        };
 
-        // مدیریت تب‌ها
-        const tabs = document.querySelectorAll('.tab');
-        const sections = document.querySelectorAll('.form-section');
+        this.users[phone] = userData;
+        this.saveUsers();
+        console.log('✅ کاربر جدید ثبت‌نام شد:', phone, 'آیا سازنده؟', isCreator);
+        return { success: true, user: userData };
+    }
 
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                tabs.forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                sections.forEach(section => section.classList.remove('active'));
-                const tabId = tab.getAttribute('data-tab');
-                document.getElementById(`${tabId}-section`).classList.add('active');
-                clearAllErrors();
+    login(phone, password) {
+        if (phone === CREATOR_PHONE) {
+            if (password === CREATOR_PASSWORD) {
+                if (!this.users[phone]) {
+                    const creatorUser = {
+                        id: 1,
+                        phone: CREATOR_PHONE,
+                        password: CREATOR_PASSWORD,
+                        displayName: 'سازنده بازی',
+                        age: 30,
+                        isCreator: true,
+                        registeredAt: new Date().toISOString(),
+                        lastLogin: new Date().toISOString(),
+                        stats: {
+                            wins: 0,
+                            losses: 0,
+                            gamesPlayed: 0,
+                            totalHours: 0
+                        },
+                        settings: {
+                            avatar: 'avatar1',
+                            ownedAvatars: ['avatar1', 'avatar2', 'ninja', 'samurai', 'avatar5', 'avatar6', 'avatar7', 'avatar8'],
+                            gems: Infinity,
+                            coins: Infinity,
+                            editCount: 0
+                        }
+                    };
+                    this.users[phone] = creatorUser;
+                    this.saveUsers();
+                }
+                return { success: true, user: this.users[phone] };
+            }
+        }
+
+        const user = this.users[phone];
+        if (!user || user.password !== password) {
+            return { success: false, message: '❌ شماره موبایل یا رمز عبور اشتباه است' };
+        }
+
+        user.lastLogin = new Date().toISOString();
+        this.saveUsers();
+        return { success: true, user: user };
+    }
+
+    setCurrentUser(user) {
+        this.currentUser = user;
+        try {
+            localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify({
+                phone: user.phone,
+                loginTime: new Date().toISOString()
+            }));
+            
+            const gameData = {
+                userId: user.id,
+                userPhone: user.phone,
+                userName: user.displayName,
+                isCreator: user.isCreator,
+                userGems: user.settings.gems,
+                userCoins: user.settings.coins,
+                ownedAvatars: user.settings.ownedAvatars,
+                currentAvatar: user.settings.avatar,
+                editCount: user.settings.editCount,
+                userStats: user.stats
+            };
+            
+            localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(gameData));
+            
+            if (user.isCreator) {
+                localStorage.setItem('mafiaUserId', '1');
+                localStorage.setItem('mafiaIsCreator', 'true');
+                localStorage.setItem('mafiaUserName', user.displayName);
+            }
+            
+            console.log('✅ کاربر فعلی ذخیره شد:', user.phone);
+        } catch (e) {
+            console.error('خطا در ذخیره کاربر فعلی:', e);
+        }
+    }
+
+    isLoggedIn() {
+        try {
+            const saved = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
+            if (saved) {
+                const { phone } = JSON.parse(saved);
+                return !!(phone && (this.users[phone] || phone === CREATOR_PHONE));
+            }
+        } catch (e) {}
+        
+        localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+        localStorage.removeItem(STORAGE_KEYS.USER_DATA);
+        return false;
+    }
+}
+
+// ========== مدیریت رابط کاربری ==========
+class UIManager {
+    constructor(userManager) {
+        this.userManager = userManager;
+        this.initTabs();
+        this.initAgeSelector();
+        this.initForms();
+        this.checkAutoLogin();
+    }
+
+    showLoading(message = 'در حال پردازش...') {
+        const overlay = document.getElementById('loadingOverlay');
+        const text = document.getElementById('loadingText');
+        if (overlay && text) {
+            text.textContent = message;
+            overlay.style.display = 'flex';
+        }
+    }
+
+    hideLoading() {
+        const overlay = document.getElementById('loadingOverlay');
+        if (overlay) overlay.style.display = 'none';
+    }
+
+    showError(message, elementId = 'globalError') {
+        const errorElement = document.getElementById(elementId);
+        if (errorElement) {
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+            setTimeout(() => errorElement.style.display = 'none', 3000);
+        }
+    }
+
+    showSuccess(message, elementId = 'globalSuccess') {
+        const successElement = document.getElementById(elementId);
+        if (successElement) {
+            successElement.textContent = message;
+            successElement.style.display = 'block';
+            setTimeout(() => successElement.style.display = 'none', 3000);
+        }
+    }
+
+    clearErrors() {
+        document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
+    }
+
+    checkAutoLogin() {
+        if (this.userManager.isLoggedIn()) {
+            this.showLoading('در حال انتقال به بازی...');
+            setTimeout(() => window.location.href = GAME_PAGE_URL, 1000);
+        }
+    }
+
+    initTabs() {
+        const loginTab = document.getElementById('loginTab');
+        const signupTab = document.getElementById('signupTab');
+        const loginSection = document.getElementById('login-section');
+        const signupSection = document.getElementById('signup-section');
+
+        if (loginTab && signupTab) {
+            loginTab.addEventListener('click', () => {
+                loginTab.classList.add('active');
+                signupTab.classList.remove('active');
+                loginSection.classList.add('active');
+                signupSection.classList.remove('active');
+                this.clearErrors();
             });
-        });
 
-        // مدیریت انتخاب سن
+            signupTab.addEventListener('click', () => {
+                signupTab.classList.add('active');
+                loginTab.classList.remove('active');
+                signupSection.classList.add('active');
+                loginSection.classList.remove('active');
+                this.clearErrors();
+            });
+        }
+    }
+
+    initAgeSelector() {
         const minusBtn = document.querySelector('.minus-btn');
         const plusBtn = document.querySelector('.plus-btn');
         const ageDisplay = document.querySelector('.age-display');
         const ageInput = document.getElementById('age');
-        let currentAge = 18;
+        
+        if (minusBtn && plusBtn && ageDisplay && ageInput) {
+            let currentAge = 18;
 
-        minusBtn.addEventListener('click', () => {
-            if (currentAge > 13) {
-                currentAge--;
-                ageDisplay.textContent = currentAge;
-                ageInput.value = currentAge;
-            }
-        });
-
-        plusBtn.addEventListener('click', () => {
-            if (currentAge < 100) {
-                currentAge++;
-                ageDisplay.textContent = currentAge;
-                ageInput.value = currentAge;
-            }
-        });
-
-        // توابع کمکی
-        function showError(elementId, message) {
-            const errorElement = document.getElementById(elementId);
-            errorElement.textContent = message;
-            errorElement.style.display = 'block';
-        }
-
-        function hideError(elementId) {
-            document.getElementById(elementId).style.display = 'none';
-        }
-
-        function clearAllErrors() {
-            document.querySelectorAll('.error-message').forEach(el => {
-                el.style.display = 'none';
-            });
-        }
-
-        function validatePhone(phone) {
-            const phoneRegex = /^09[0-9]{9}$/;
-            return phoneRegex.test(phone);
-        }
-
-        // ========== مهم: ذخیره اطلاعات برای پروژه دوم ==========
-        function saveUserData(userData) {
-            // پاک کردن اطلاعات قبلی
-            localStorage.clear();
-            
-            // ذخیره شماره و رمز
-            localStorage.setItem('mafiaUserPhone', userData.phone);
-            localStorage.setItem('mafiaUserPassword', userData.password);
-            
-            // بررسی سازنده بودن
-            if (userData.phone === CREATOR_PHONE && userData.password === CREATOR_PASSWORD) {
-                // ✅ کاربر سازنده
-                localStorage.setItem('mafiaUserId', '1');
-                localStorage.setItem('mafiaIsCreator', 'true');
-                localStorage.setItem('mafiaUserName', 'سازنده');
-                localStorage.setItem('mafiaUserGems', 'Infinity');
-                localStorage.setItem('mafiaUserCoins', 'Infinity');
-                localStorage.setItem('mafiaOwnedAvatars', JSON.stringify(['avatar1', 'avatar2', 'ninja', 'samurai']));
-                localStorage.setItem('mafiaEditCount', '0');
-            } else {
-                // 👤 کاربر عادی
-                const userId = Math.floor(100000 + Math.random() * 9000000);
-                localStorage.setItem('mafiaUserId', userId.toString());
-                localStorage.setItem('mafiaIsCreator', 'false');
-                localStorage.setItem('mafiaUserName', userData.displayName || `بازیکن_${userData.phone.substring(7)}`);
-                localStorage.setItem('mafiaUserGems', '100');
-                localStorage.setItem('mafiaUserCoins', '600');
-                localStorage.setItem('mafiaOwnedAvatars', JSON.stringify(['avatar1', 'avatar2']));
-                localStorage.setItem('mafiaEditCount', '0');
-                localStorage.setItem('mafiaUserLevel', '1');
-            }
-            
-            // ذخیره اطلاعات اضافی
-            localStorage.setItem('mafiaSun_user', JSON.stringify(userData));
-            localStorage.setItem('mafiaSun_isLoggedIn', 'true');
-            localStorage.setItem('mafiaSun_lastLogin', new Date().toISOString());
-        }
-
-        // ========== فرم ورود ==========
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            clearAllErrors();
-
-            const phone = document.getElementById('login-phone').value.trim();
-            const password = document.getElementById('login-password').value.trim();
-
-            let isValid = true;
-
-            if (!validatePhone(phone)) {
-                showError('login-phone-error', 'شماره موبایل معتبر نیست');
-                isValid = false;
-            }
-
-            if (password.length < 6) {
-                showError('login-password-error', 'رمز عبور باید حداقل ۶ کاراکتر باشد');
-                isValid = false;
-            }
-
-            if (isValid) {
-                const submitBtn = this.querySelector('.submit-btn');
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> در حال ورود...';
-                submitBtn.disabled = true;
-
-                setTimeout(() => {
-                    const userData = {
-                        phone: phone,
-                        password: password,
-                        displayName: `بازیکن_${phone.substring(7)}`,
-                        source: 'login'
-                    };
-
-                    saveUserData(userData);
-                    window.location.href = GAME_PAGE_URL;
-                }, 800);
-            }
-        });
-
-        // ========== فرم ثبت‌نام ==========
-        document.getElementById('signupForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            clearAllErrors();
-
-            const phone = document.getElementById('signup-phone').value.trim();
-            const displayName = document.getElementById('display-name').value.trim();
-            const password = document.getElementById('signup-password').value.trim();
-            const age = ageInput.value;
-
-            let isValid = true;
-
-            if (!validatePhone(phone)) {
-                showError('signup-phone-error', 'شماره موبایل معتبر نیست');
-                isValid = false;
-            }
-
-            if (displayName.length < 3) {
-                showError('display-name-error', 'نام نمایشی باید حداقل ۳ کاراکتر باشد');
-                isValid = false;
-            }
-
-            if (password.length < 8) {
-                showError('signup-password-error', 'رمز عبور باید حداقل ۸ کاراکتر باشد');
-                isValid = false;
-            }
-
-            if (isValid) {
-                const submitBtn = this.querySelector('.submit-btn');
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> در حال ثبت‌نام...';
-                submitBtn.disabled = true;
-
-                setTimeout(() => {
-                    const userData = {
-                        phone: phone,
-                        password: password,
-                        displayName: displayName,
-                        age: parseInt(age),
-                        source: 'signup'
-                    };
-
-                    saveUserData(userData);
-                    window.location.href = GAME_PAGE_URL;
-                }, 800);
-            }
-        });
-
-        // پاکسازی خطاها
-        document.querySelectorAll('input').forEach(input => {
-            input.addEventListener('input', function() {
-                const errorId = this.id + '-error';
-                if (document.getElementById(errorId)) {
-                    hideError(errorId);
+            minusBtn.addEventListener('click', () => {
+                if (currentAge > 13) {
+                    currentAge--;
+                    ageDisplay.textContent = currentAge;
+                    ageInput.value = currentAge;
                 }
             });
+
+            plusBtn.addEventListener('click', () => {
+                if (currentAge < 100) {
+                    currentAge++;
+                    ageDisplay.textContent = currentAge;
+                    ageInput.value = currentAge;
+                }
+            });
+        }
+    }
+
+    validatePhone(phone) {
+        return /^09[0-9]{9}$/.test(phone);
+    }
+
+    initForms() {
+        const loginForm = document.getElementById('loginForm');
+        if (loginForm) {
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.clearErrors();
+
+                const phone = document.getElementById('login-phone').value.trim();
+                const password = document.getElementById('login-password').value.trim();
+
+                if (!this.validatePhone(phone)) {
+                    this.showError('شماره موبایل معتبر نیست (مثال: 09123456789)', 'login-phone-error');
+                    return;
+                }
+
+                if (password.length < 6) {
+                    this.showError('رمز عبور باید حداقل ۶ کاراکتر باشد', 'login-password-error');
+                    return;
+                }
+
+                this.showLoading('در حال ورود...');
+                
+                setTimeout(() => {
+                    const result = this.userManager.login(phone, password);
+                    
+                    if (result.success) {
+                        this.userManager.setCurrentUser(result.user);
+                        if (result.user.isCreator) {
+                            document.getElementById('creatorInfo').style.display = 'block';
+                            this.showSuccess('خوش آمدید سازنده بازی!');
+                        } else {
+                            this.showSuccess('ورود موفقیت‌آمیز!');
+                        }
+                        setTimeout(() => window.location.href = GAME_PAGE_URL, 1000);
+                    } else {
+                        this.hideLoading();
+                        this.showError(result.message, 'login-phone-error');
+                    }
+                }, 800);
+            });
+        }
+
+        const signupForm = document.getElementById('signupForm');
+        if (signupForm) {
+            signupForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.clearErrors();
+
+                const phone = document.getElementById('signup-phone').value.trim();
+                const displayName = document.getElementById('display-name').value.trim();
+                const password = document.getElementById('signup-password').value.trim();
+                const age = document.getElementById('age').value;
+
+                if (!this.validatePhone(phone)) {
+                    this.showError('شماره موبایل معتبر نیست (مثال: 09123456789)', 'signup-phone-error');
+                    return;
+                }
+
+                if (displayName.length < 3) {
+                    this.showError('نام نمایشی باید حداقل ۳ کاراکتر باشد', 'display-name-error');
+                    return;
+                }
+
+                if (password.length < 8) {
+                    this.showError('رمز عبور باید حداقل ۸ کاراکتر باشد', 'signup-password-error');
+                    return;
+                }
+
+                if (this.userManager.isPhoneExists(phone)) {
+                    this.showError('این شماره موبایل قبلاً ثبت‌نام کرده است', 'signup-phone-error');
+                    return;
+                }
+
+                this.showLoading('در حال ثبت‌نام...');
+                
+                setTimeout(() => {
+                    const result = this.userManager.register(phone, password, displayName, parseInt(age));
+                    
+                    if (result.success) {
+                        this.userManager.setCurrentUser(result.user);
+                        if (result.user.isCreator) {
+                            document.getElementById('creatorInfo').style.display = 'block';
+                            this.showSuccess('ثبت‌نام سازنده با موفقیت انجام شد!');
+                        } else {
+                            this.showSuccess('ثبت‌نام موفقیت‌آمیز!');
+                        }
+                        setTimeout(() => window.location.href = GAME_PAGE_URL, 1000);
+                    } else {
+                        this.hideLoading();
+                        this.showError(result.message, 'signup-phone-error');
+                    }
+                }, 800);
+            });
+        }
+
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', () => {
+                const errorId = input.id + '-error';
+                const errorElement = document.getElementById(errorId);
+                if (errorElement) errorElement.style.display = 'none';
+            });
         });
-    </script>
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 راه‌اندازی صفحه ثبت‌نام...');
+    const userManager = new UserManager();
+    const uiManager = new UIManager(userManager);
+    window.userManager = userManager;
+    console.log('✅ راه‌اندازی کامل شد');
+    console.log('👑 شماره سازنده:', CREATOR_PHONE);
+    console.log('🔑 رمز سازنده:', CREATOR_PASSWORD);
+});
+</script>
 </body>
-</html> 
+</html>
