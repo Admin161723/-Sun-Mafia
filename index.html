@@ -32,11 +32,13 @@
             --primary-light: rgba(255, 152, 0, 0.2);
             --mafia-red: #D32F2F;
             --success-green: #4CAF50;
+            --support-blue: #3b9eff;
+            --observer-orange: #ffaa00;
         }
 
         .container {
             width: 100%;
-            max-width: 380px;
+            max-width: 450px;
             margin: 0 auto;
         }
 
@@ -283,6 +285,33 @@
             margin-left: 5px;
         }
 
+        .role-box {
+            background: rgba(59, 158, 255, 0.1);
+            border: 1px solid var(--support-blue);
+            border-radius: 10px;
+            padding: 8px;
+            margin-bottom: 10px;
+            font-size: 0.85rem;
+            color: var(--support-blue);
+            display: none;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .role-box.support {
+            border-color: var(--support-blue);
+            color: var(--support-blue);
+        }
+
+        .role-box.observer {
+            border-color: var(--observer-orange);
+            color: var(--observer-orange);
+        }
+
+        .role-box i {
+            font-size: 1rem;
+        }
+
         .loading-overlay {
             position: fixed;
             top: 0;
@@ -318,6 +347,173 @@
             to { transform: rotate(360deg); }
         }
 
+        /* پنل مدیریت */
+        .admin-panel-mini {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 20px;
+            border: 1px solid var(--dark-border);
+            display: none;
+        }
+
+        .admin-panel-mini.visible {
+            display: block;
+        }
+
+        .admin-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--dark-border);
+        }
+
+        .admin-header i {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .admin-header h3 {
+            color: white;
+            font-size: 1.1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .stat-item {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary-color);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--dark-text-secondary);
+        }
+
+        .user-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin: 15px 0;
+        }
+
+        .user-item {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: black;
+            font-weight: 800;
+        }
+
+        .user-details {
+            flex: 1;
+        }
+
+        .user-name {
+            color: white;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .user-phone {
+            color: var(--dark-text-secondary);
+            font-size: 0.7rem;
+        }
+
+        .user-role {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .role-creator {
+            background: var(--primary-color);
+            color: black;
+        }
+
+        .role-support {
+            background: var(--support-blue);
+            color: white;
+        }
+
+        .role-observer {
+            background: var(--observer-orange);
+            color: black;
+        }
+
+        .role-normal {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .admin-action-btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid var(--primary-color);
+            background: transparent;
+            color: var(--primary-color);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .admin-action-btn:hover {
+            background: var(--primary-color);
+            color: black;
+        }
+
+        .admin-action-btn.danger {
+            border-color: var(--mafia-red);
+            color: var(--mafia-red);
+        }
+
+        .admin-action-btn.danger:hover {
+            background: var(--mafia-red);
+            color: white;
+        }
+
         @media (max-width: 480px) {
             .auth-card {
                 padding: 30px 25px;
@@ -330,6 +526,10 @@
 
             .form-group input {
                 padding: 15px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -351,6 +551,14 @@
 
             <div class="info-box" id="creatorInfo" style="display: none;">
                 <i class="fas fa-crown"></i> شما با شماره سازنده وارد شده‌اید
+            </div>
+
+            <div class="role-box" id="supportInfo">
+                <i class="fas fa-check-circle"></i> شما عضو تیم پشتیبانی هستید
+            </div>
+
+            <div class="role-box observer" id="observerInfo">
+                <i class="fas fa-circle"></i> شما مقام ناظر دارید
             </div>
 
             <div class="tabs">
@@ -435,24 +643,88 @@
 
             <div class="success-message" id="globalSuccess"></div>
             <div class="error-message" id="globalError"></div>
+
+            <!-- پنل مدیریت مینی (فقط برای سازنده و پشتیبانی) -->
+            <div class="admin-panel-mini" id="adminPanel">
+                <div class="admin-header">
+                    <i class="fas fa-crown"></i>
+                    <h3>پنل مدیریت</h3>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalUsers">0</div>
+                        <div class="stat-label">کل کاربران</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="onlineUsers">0</div>
+                        <div class="stat-label">آنلاین</div>
+                    </div>
+                </div>
+
+                <div class="user-list" id="userList">
+                    <!-- لیست کاربران با جاوااسکریپت پر می‌شود -->
+                </div>
+
+                <div class="admin-actions">
+                    <button class="admin-action-btn" onclick="clearAllData()">
+                        <i class="fas fa-trash"></i> پاک کردن همه داده‌ها
+                    </button>
+                    <button class="admin-action-btn danger" onclick="resetGame()">
+                        <i class="fas fa-sync-alt"></i> ریست کردن بازی
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <script src="auth.js"></script>
-<script>
-// ========== auth.js ==========
-// ========== آدرس صفحه بازی ==========
+    <script>
+// ========== تنظیمات ==========
 const GAME_PAGE_URL = 'https://admin161723.github.io/Mafia_Sun1/';
-
-// ========== شماره و رمز سازنده ==========
 const CREATOR_PHONE = '09904844031';
 const CREATOR_PASSWORD = 'Admin16172-matin-1000';
+
+// ========== کاربران ویژه ==========
+const SPECIAL_USERS = [
+    {
+        phone: '09940940720',
+        userId: 3,
+        displayName: 'LÚÇÌFÈR',
+        gems: 1000,
+        coins: 1000,
+        password: 'Erfan.sh85',
+        role: 'support',
+        hasBlueTick: true
+    },
+    {
+        phone: '09212327833',
+        userId: 2,
+        displayName: 'امیروینستون',
+        gems: 1000,
+        coins: 1000,
+        password: '010101010',
+        role: 'support',
+        hasBlueTick: true
+    },
+    {
+        phone: '09053065179',
+        userId: 100,
+        displayName: '•°Ami®=dar©°•',
+        gems: 350,
+        coins: 800,
+        password: 'amirhosein1386',
+        role: 'observer',
+        hasOrangeTick: true
+    }
+];
 
 // ========== کلیدهای ذخیره‌سازی ==========
 const STORAGE_KEYS = {
     USERS: 'mafiaSun_users',
     CURRENT_USER: 'mafiaSun_currentUser',
-    USER_DATA: 'mafiaSun_userData'
+    USER_DATA: 'mafiaSun_userData',
+    REPORTS: 'mafiaReports',
+    TEMP_BANS: 'mafiaTempBans'
 };
 
 // ========== مدیریت کاربران ==========
@@ -460,6 +732,7 @@ class UserManager {
     constructor() {
         this.users = this.loadUsers();
         this.currentUser = null;
+        this.ensureSpecialUsersExist();
         this.ensureCreatorExists();
     }
 
@@ -471,7 +744,8 @@ class UserManager {
                 password: CREATOR_PASSWORD,
                 displayName: 'سازنده بازی',
                 age: 30,
-                isCreator: true,
+                role: 'creator',
+                hasBlueTick: true,
                 registeredAt: new Date().toISOString(),
                 lastLogin: null,
                 stats: {
@@ -490,8 +764,43 @@ class UserManager {
             };
             this.users[CREATOR_PHONE] = creatorUser;
             this.saveUsers();
-            console.log('✅ کاربر سازنده به لیست اضافه شد');
         }
+    }
+
+    ensureSpecialUsersExist() {
+        SPECIAL_USERS.forEach(specialUser => {
+            if (!this.isPhoneExists(specialUser.phone)) {
+                const userData = {
+                    id: specialUser.userId,
+                    phone: specialUser.phone,
+                    password: specialUser.password,
+                    displayName: specialUser.displayName,
+                    age: 25,
+                    role: specialUser.role,
+                    hasBlueTick: specialUser.hasBlueTick || false,
+                    hasOrangeTick: specialUser.hasOrangeTick || false,
+                    registeredAt: new Date().toISOString(),
+                    lastLogin: null,
+                    stats: {
+                        wins: 0,
+                        losses: 0,
+                        gamesPlayed: 0,
+                        totalHours: 0
+                    },
+                    settings: {
+                        avatar: 'avatar1',
+                        ownedAvatars: specialUser.role === 'support' ? 
+                            ['avatar1', 'avatar2', 'ninja', 'samurai', 'avatar5', 'avatar6', 'avatar7', 'avatar8'] : 
+                            ['avatar1', 'avatar2', 'ninja', 'samurai'],
+                        gems: specialUser.gems,
+                        coins: specialUser.coins,
+                        editCount: 0
+                    }
+                };
+                this.users[specialUser.phone] = userData;
+            }
+        });
+        this.saveUsers();
     }
 
     loadUsers() {
@@ -507,7 +816,6 @@ class UserManager {
     saveUsers() {
         try {
             localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(this.users));
-            console.log('✅ لیست کاربران ذخیره شد');
         } catch (e) {
             console.error('خطا در ذخیره کاربران:', e);
         }
@@ -522,16 +830,17 @@ class UserManager {
             return { success: false, message: '❌ این شماره موبایل قبلاً ثبت‌نام کرده است' };
         }
 
-        const isCreator = (phone === CREATOR_PHONE && password === CREATOR_PASSWORD);
-        const userId = isCreator ? 1 : (Date.now() + Math.floor(Math.random() * 1000));
-        
+        const userId = Date.now() + Math.floor(Math.random() * 1000);
+
         const userData = {
             id: userId,
             phone: phone,
             password: password,
-            displayName: isCreator ? 'سازنده بازی' : (displayName || `بازیکن_${phone.substring(7)}`),
-            age: age || 18,
-            isCreator: isCreator,
+            displayName: displayName,
+            age: age,
+            role: 'normal',
+            hasBlueTick: false,
+            hasOrangeTick: false,
             registeredAt: new Date().toISOString(),
             lastLogin: null,
             stats: {
@@ -542,56 +851,21 @@ class UserManager {
             },
             settings: {
                 avatar: 'avatar1',
-                ownedAvatars: isCreator ? 
-                    ['avatar1', 'avatar2', 'ninja', 'samurai', 'avatar5', 'avatar6', 'avatar7', 'avatar8'] : 
-                    ['avatar1', 'avatar2'],
-                gems: isCreator ? Infinity : 100,
-                coins: isCreator ? Infinity : 600,
+                ownedAvatars: ['avatar1', 'avatar2'],
+                gems: 100,
+                coins: 600,
                 editCount: 0
             }
         };
 
         this.users[phone] = userData;
         this.saveUsers();
-        console.log('✅ کاربر جدید ثبت‌نام شد:', phone, 'آیا سازنده؟', isCreator);
         return { success: true, user: userData };
     }
 
     login(phone, password) {
-        if (phone === CREATOR_PHONE) {
-            if (password === CREATOR_PASSWORD) {
-                if (!this.users[phone]) {
-                    const creatorUser = {
-                        id: 1,
-                        phone: CREATOR_PHONE,
-                        password: CREATOR_PASSWORD,
-                        displayName: 'سازنده بازی',
-                        age: 30,
-                        isCreator: true,
-                        registeredAt: new Date().toISOString(),
-                        lastLogin: new Date().toISOString(),
-                        stats: {
-                            wins: 0,
-                            losses: 0,
-                            gamesPlayed: 0,
-                            totalHours: 0
-                        },
-                        settings: {
-                            avatar: 'avatar1',
-                            ownedAvatars: ['avatar1', 'avatar2', 'ninja', 'samurai', 'avatar5', 'avatar6', 'avatar7', 'avatar8'],
-                            gems: Infinity,
-                            coins: Infinity,
-                            editCount: 0
-                        }
-                    };
-                    this.users[phone] = creatorUser;
-                    this.saveUsers();
-                }
-                return { success: true, user: this.users[phone] };
-            }
-        }
-
         const user = this.users[phone];
+        
         if (!user || user.password !== password) {
             return { success: false, message: '❌ شماره موبایل یا رمز عبور اشتباه است' };
         }
@@ -601,6 +875,20 @@ class UserManager {
         return { success: true, user: user };
     }
 
+    getAllUsers() {
+        return Object.values(this.users);
+    }
+
+    getOnlineUsers() {
+        const now = new Date();
+        return Object.values(this.users).filter(user => {
+            if (!user.lastLogin) return false;
+            const lastLogin = new Date(user.lastLogin);
+            const diffMinutes = (now - lastLogin) / (1000 * 60);
+            return diffMinutes < 30;
+        });
+    }
+
     setCurrentUser(user) {
         this.currentUser = user;
         try {
@@ -608,12 +896,15 @@ class UserManager {
                 phone: user.phone,
                 loginTime: new Date().toISOString()
             }));
-            
+
             const gameData = {
                 userId: user.id,
                 userPhone: user.phone,
                 userName: user.displayName,
-                isCreator: user.isCreator,
+                userRole: user.role,
+                hasBlueTick: user.hasBlueTick,
+                hasOrangeTick: user.hasOrangeTick,
+                isCreator: user.role === 'creator' || user.role === 'support',
                 userGems: user.settings.gems,
                 userCoins: user.settings.coins,
                 ownedAvatars: user.settings.ownedAvatars,
@@ -621,16 +912,14 @@ class UserManager {
                 editCount: user.settings.editCount,
                 userStats: user.stats
             };
-            
+
             localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(gameData));
-            
-            if (user.isCreator) {
-                localStorage.setItem('mafiaUserId', '1');
+
+            if (user.role === 'creator' || user.role === 'support') {
+                localStorage.setItem('mafiaUserId', user.id.toString());
                 localStorage.setItem('mafiaIsCreator', 'true');
                 localStorage.setItem('mafiaUserName', user.displayName);
             }
-            
-            console.log('✅ کاربر فعلی ذخیره شد:', user.phone);
         } catch (e) {
             console.error('خطا در ذخیره کاربر فعلی:', e);
         }
@@ -641,13 +930,17 @@ class UserManager {
             const saved = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
             if (saved) {
                 const { phone } = JSON.parse(saved);
-                return !!(phone && (this.users[phone] || phone === CREATOR_PHONE));
+                return !!(phone && this.users[phone]);
             }
         } catch (e) {}
-        
-        localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
-        localStorage.removeItem(STORAGE_KEYS.USER_DATA);
         return false;
+    }
+
+    clearAllData() {
+        localStorage.clear();
+        this.users = {};
+        this.ensureSpecialUsersExist();
+        this.ensureCreatorExists();
     }
 }
 
@@ -734,7 +1027,7 @@ class UIManager {
         const plusBtn = document.querySelector('.plus-btn');
         const ageDisplay = document.querySelector('.age-display');
         const ageInput = document.getElementById('age');
-        
+
         if (minusBtn && plusBtn && ageDisplay && ageInput) {
             let currentAge = 18;
 
@@ -760,6 +1053,59 @@ class UIManager {
         return /^09[0-9]{9}$/.test(phone);
     }
 
+    updateAdminPanel() {
+        const adminPanel = document.getElementById('adminPanel');
+        const totalUsers = document.getElementById('totalUsers');
+        const onlineUsers = document.getElementById('onlineUsers');
+        const userList = document.getElementById('userList');
+
+        if (!adminPanel || !totalUsers || !onlineUsers || !userList) return;
+
+        const allUsers = this.userManager.getAllUsers();
+        const online = this.userManager.getOnlineUsers();
+
+        totalUsers.textContent = allUsers.length;
+        onlineUsers.textContent = online.length;
+
+        let userListHTML = '';
+        allUsers.slice(0, 10).forEach(user => {
+            let roleClass = 'role-normal';
+            let roleText = 'عادی';
+            
+            if (user.role === 'creator') {
+                roleClass = 'role-creator';
+                roleText = 'سازنده';
+            } else if (user.role === 'support') {
+                roleClass = 'role-support';
+                roleText = 'پشتیبانی';
+            } else if (user.role === 'observer') {
+                roleClass = 'role-observer';
+                roleText = 'ناظر';
+            }
+
+            const isOnline = online.some(u => u.phone === user.phone);
+
+            userListHTML += `
+                <div class="user-item">
+                    <div class="user-info">
+                        <div class="user-avatar">${user.displayName.charAt(0)}</div>
+                        <div class="user-details">
+                            <div class="user-name">${user.displayName}</div>
+                            <div class="user-phone">${user.phone}</div>
+                        </div>
+                    </div>
+                    <div class="user-role ${roleClass}">${roleText}</div>
+                </div>
+            `;
+        });
+
+        if (allUsers.length > 10) {
+            userListHTML += `<div style="text-align: center; color: var(--dark-text-secondary); padding: 10px;">و ${allUsers.length - 10} کاربر دیگر...</div>`;
+        }
+
+        userList.innerHTML = userListHTML || '<div style="text-align: center; color: var(--dark-text-secondary); padding: 20px;">کاربری وجود ندارد</div>';
+    }
+
     initForms() {
         const loginForm = document.getElementById('loginForm');
         if (loginForm) {
@@ -781,18 +1127,41 @@ class UIManager {
                 }
 
                 this.showLoading('در حال ورود...');
-                
+
                 setTimeout(() => {
                     const result = this.userManager.login(phone, password);
-                    
+
                     if (result.success) {
                         this.userManager.setCurrentUser(result.user);
-                        if (result.user.isCreator) {
+                        
+                        if (result.user.role === 'creator') {
                             document.getElementById('creatorInfo').style.display = 'block';
+                            document.getElementById('supportInfo').style.display = 'none';
+                            document.getElementById('observerInfo').style.display = 'none';
                             this.showSuccess('خوش آمدید سازنده بازی!');
+                            adminPanel.style.display = 'block';
+                            this.updateAdminPanel();
+                        } else if (result.user.role === 'support') {
+                            document.getElementById('supportInfo').style.display = 'flex';
+                            document.getElementById('creatorInfo').style.display = 'none';
+                            document.getElementById('observerInfo').style.display = 'none';
+                            this.showSuccess('خوش آمدید! شما عضو تیم پشتیبانی هستید');
+                            adminPanel.style.display = 'block';
+                            this.updateAdminPanel();
+                        } else if (result.user.role === 'observer') {
+                            document.getElementById('observerInfo').style.display = 'flex';
+                            document.getElementById('creatorInfo').style.display = 'none';
+                            document.getElementById('supportInfo').style.display = 'none';
+                            this.showSuccess('خوش آمدید! شما مقام ناظر دارید');
+                            adminPanel.style.display = 'none';
                         } else {
+                            document.getElementById('creatorInfo').style.display = 'none';
+                            document.getElementById('supportInfo').style.display = 'none';
+                            document.getElementById('observerInfo').style.display = 'none';
                             this.showSuccess('ورود موفقیت‌آمیز!');
+                            adminPanel.style.display = 'none';
                         }
+                        
                         setTimeout(() => window.location.href = GAME_PAGE_URL, 1000);
                     } else {
                         this.hideLoading();
@@ -834,18 +1203,19 @@ class UIManager {
                 }
 
                 this.showLoading('در حال ثبت‌نام...');
-                
+
                 setTimeout(() => {
                     const result = this.userManager.register(phone, password, displayName, parseInt(age));
-                    
+
                     if (result.success) {
                         this.userManager.setCurrentUser(result.user);
-                        if (result.user.isCreator) {
-                            document.getElementById('creatorInfo').style.display = 'block';
-                            this.showSuccess('ثبت‌نام سازنده با موفقیت انجام شد!');
-                        } else {
-                            this.showSuccess('ثبت‌نام موفقیت‌آمیز!');
-                        }
+                        
+                        document.getElementById('creatorInfo').style.display = 'none';
+                        document.getElementById('supportInfo').style.display = 'none';
+                        document.getElementById('observerInfo').style.display = 'none';
+                        this.showSuccess('ثبت‌نام موفقیت‌آمیز!');
+                        adminPanel.style.display = 'none';
+                        
                         setTimeout(() => window.location.href = GAME_PAGE_URL, 1000);
                     } else {
                         this.hideLoading();
@@ -865,15 +1235,42 @@ class UIManager {
     }
 }
 
+// ========== توابع گلوبال ==========
+function clearAllData() {
+    if (confirm('⚠️ آیا از پاک کردن همه داده‌ها اطمینان دارید؟ این عمل غیرقابل بازگشت است!')) {
+        localStorage.clear();
+        alert('✅ همه داده‌ها پاک شدند. صفحه دوباره بارگذاری می‌شود.');
+        window.location.reload();
+    }
+}
+
+function resetGame() {
+    if (confirm('⚠️ آیا از ریست کردن بازی اطمینان دارید؟')) {
+        localStorage.removeItem('mafiaSun_lobbies');
+        localStorage.removeItem('mafiaSun_blacklist');
+        localStorage.removeItem('mafiaReports');
+        localStorage.removeItem('mafiaTempBans');
+        alert('✅ بازی ریست شد.');
+    }
+}
+
+// ========== راه‌اندازی ==========
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 راه‌اندازی صفحه ثبت‌نام...');
+    
     const userManager = new UserManager();
     const uiManager = new UIManager(userManager);
+    
     window.userManager = userManager;
+    window.uiManager = uiManager;
+    window.clearAllData = clearAllData;
+    window.resetGame = resetGame;
+    
     console.log('✅ راه‌اندازی کامل شد');
     console.log('👑 شماره سازنده:', CREATOR_PHONE);
     console.log('🔑 رمز سازنده:', CREATOR_PASSWORD);
+    console.log('📱 شماره‌های ویژه:', SPECIAL_USERS.map(u => u.phone).join(', '));
 });
-</script>
+    </script>
 </body>
 </html>
