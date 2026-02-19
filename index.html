@@ -34,6 +34,7 @@
             --success-green: #4CAF50;
             --support-blue: #3b9eff;
             --observer-orange: #ffaa00;
+            --creator-blue: #3b9eff;
         }
 
         .container {
@@ -308,6 +309,11 @@
             color: var(--observer-orange);
         }
 
+        .role-box.creator {
+            border-color: var(--creator-blue);
+            color: var(--creator-blue);
+        }
+
         .role-box i {
             font-size: 1rem;
         }
@@ -347,173 +353,6 @@
             to { transform: rotate(360deg); }
         }
 
-        /* پنل مدیریت */
-        .admin-panel-mini {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 12px;
-            padding: 15px;
-            margin-top: 20px;
-            border: 1px solid var(--dark-border);
-            display: none;
-        }
-
-        .admin-panel-mini.visible {
-            display: block;
-        }
-
-        .admin-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--dark-border);
-        }
-
-        .admin-header i {
-            font-size: 1.5rem;
-            color: var(--primary-color);
-        }
-
-        .admin-header h3 {
-            color: white;
-            font-size: 1.1rem;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .stat-item {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 10px;
-            padding: 12px;
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: var(--primary-color);
-        }
-
-        .stat-label {
-            font-size: 0.8rem;
-            color: var(--dark-text-secondary);
-        }
-
-        .user-list {
-            max-height: 200px;
-            overflow-y: auto;
-            margin: 15px 0;
-        }
-
-        .user-item {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            padding: 10px;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: var(--primary-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: black;
-            font-weight: 800;
-        }
-
-        .user-details {
-            flex: 1;
-        }
-
-        .user-name {
-            color: white;
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-
-        .user-phone {
-            color: var(--dark-text-secondary);
-            font-size: 0.7rem;
-        }
-
-        .user-role {
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 0.7rem;
-            font-weight: 600;
-        }
-
-        .role-creator {
-            background: var(--primary-color);
-            color: black;
-        }
-
-        .role-support {
-            background: var(--support-blue);
-            color: white;
-        }
-
-        .role-observer {
-            background: var(--observer-orange);
-            color: black;
-        }
-
-        .role-normal {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-        }
-
-        .admin-action-btn {
-            width: 100%;
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid var(--primary-color);
-            background: transparent;
-            color: var(--primary-color);
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .admin-action-btn:hover {
-            background: var(--primary-color);
-            color: black;
-        }
-
-        .admin-action-btn.danger {
-            border-color: var(--mafia-red);
-            color: var(--mafia-red);
-        }
-
-        .admin-action-btn.danger:hover {
-            background: var(--mafia-red);
-            color: white;
-        }
-
         @media (max-width: 480px) {
             .auth-card {
                 padding: 30px 25px;
@@ -526,10 +365,6 @@
 
             .form-group input {
                 padding: 15px;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -553,12 +388,16 @@
                 <i class="fas fa-crown"></i> شما با شماره سازنده وارد شده‌اید
             </div>
 
-            <div class="role-box" id="supportInfo">
-                <i class="fas fa-check-circle"></i> شما عضو تیم پشتیبانی هستید
+            <div class="role-box creator" id="creatorRoleInfo">
+                <i class="fas fa-check-circle" style="color: #3b9eff;"></i> شما سازنده بازی هستید (تیک آبی)
+            </div>
+
+            <div class="role-box support" id="supportInfo">
+                <i class="fas fa-check-circle" style="color: #3b9eff;"></i> شما عضو تیم پشتیبانی هستید (تیک آبی)
             </div>
 
             <div class="role-box observer" id="observerInfo">
-                <i class="fas fa-circle"></i> شما مقام ناظر دارید
+                <i class="fas fa-check-circle" style="color: #ffaa00;"></i> شما مقام ناظر دارید (تیک نارنجی)
             </div>
 
             <div class="tabs">
@@ -643,634 +482,388 @@
 
             <div class="success-message" id="globalSuccess"></div>
             <div class="error-message" id="globalError"></div>
-
-            <!-- پنل مدیریت مینی (فقط برای سازنده و پشتیبانی) -->
-            <div class="admin-panel-mini" id="adminPanel">
-                <div class="admin-header">
-                    <i class="fas fa-crown"></i>
-                    <h3>پنل مدیریت</h3>
-                </div>
-
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <div class="stat-value" id="totalUsers">0</div>
-                        <div class="stat-label">کل کاربران</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="onlineUsers">0</div>
-                        <div class="stat-label">آنلاین</div>
-                    </div>
-                </div>
-
-                <div class="user-list" id="userList">
-                    <!-- لیست کاربران با جاوااسکریپت پر می‌شود -->
-                </div>
-
-                <div class="admin-actions">
-                    <button class="admin-action-btn" onclick="clearAllData()">
-                        <i class="fas fa-trash"></i> پاک کردن همه داده‌ها
-                    </button>
-                    <button class="admin-action-btn danger" onclick="resetGame()">
-                        <i class="fas fa-sync-alt"></i> ریست کردن بازی
-                    </button>
-                </div>
-            </div>
         </div>
     </div>
 
     <script>
-// ========== تنظیمات ==========
-const GAME_PAGE_URL = 'https://admin161723.github.io/Mafia_Sun1/';
-const CREATOR_PHONE = '09904844031';
-const CREATOR_PASSWORD = 'Admin16172-matin-1000';
+        // ========== تنظیمات ==========
+        const GAME_PAGE_URL = 'https://admin161723.github.io/Mafia_Sun1/';
+        const CREATOR_PHONE = '09904844031';
+        const CREATOR_PASSWORD = 'Admin16172-matin-1000';
 
-// ========== کاربران ویژه ==========
-const SPECIAL_USERS = [
-    {
-        phone: '09940940720',
-        userId: 3,
-        displayName: 'LÚÇÌFÈR',
-        gems: 1000,
-        coins: 1000,
-        password: 'Erfan.sh85',
-        role: 'support',
-        hasBlueTick: true
-    },
-    {
-        phone: '09212327833',
-        userId: 2,
-        displayName: 'امیروینستون',
-        gems: 1000,
-        coins: 1000,
-        password: '010101010',
-        role: 'support',
-        hasBlueTick: true
-    },
-    {
-        phone: '09053065179',
-        userId: 100,
-        displayName: '•°Ami®=dar©°•',
-        gems: 350,
-        coins: 800,
-        password: 'amirhosein1386',
-        role: 'observer',
-        hasOrangeTick: true
-    }
-];
-
-// ========== کلیدهای ذخیره‌سازی ==========
-const STORAGE_KEYS = {
-    USERS: 'mafiaSun_users',
-    CURRENT_USER: 'mafiaSun_currentUser',
-    USER_DATA: 'mafiaSun_userData',
-    REPORTS: 'mafiaReports',
-    TEMP_BANS: 'mafiaTempBans'
-};
-
-// ========== مدیریت کاربران ==========
-class UserManager {
-    constructor() {
-        this.users = this.loadUsers();
-        this.currentUser = null;
-        this.ensureSpecialUsersExist();
-        this.ensureCreatorExists();
-    }
-
-    ensureCreatorExists() {
-        if (!this.isPhoneExists(CREATOR_PHONE)) {
-            const creatorUser = {
-                id: 1,
-                phone: CREATOR_PHONE,
-                password: CREATOR_PASSWORD,
-                displayName: 'سازنده بازی',
-                age: 30,
-                role: 'creator',
+        // ========== کاربران ویژه ==========
+        const SPECIAL_USERS = [
+            {
+                phone: '09940940720',
+                userId: 3,
+                name: '♛✯ Èr£åñ_ʂɧ ✯♛',
+                gems: 1000,
+                coins: 1000,
+                password: 'Erfan.sh85',
+                role: 'support',
                 hasBlueTick: true,
-                registeredAt: new Date().toISOString(),
-                lastLogin: null,
-                stats: {
-                    wins: 0,
-                    losses: 0,
-                    gamesPlayed: 0,
-                    totalHours: 0
-                },
-                settings: {
-                    avatar: 'avatar1',
-                    ownedAvatars: ['avatar1', 'avatar2', 'ninja', 'samurai', 'avatar5', 'avatar6', 'avatar7', 'avatar8'],
-                    gems: Infinity,
-                    coins: Infinity,
-                    editCount: 0
-                }
-            };
-            this.users[CREATOR_PHONE] = creatorUser;
-            this.saveUsers();
-        }
-    }
-
-    ensureSpecialUsersExist() {
-        SPECIAL_USERS.forEach(specialUser => {
-            if (!this.isPhoneExists(specialUser.phone)) {
-                const userData = {
-                    id: specialUser.userId,
-                    phone: specialUser.phone,
-                    password: specialUser.password,
-                    displayName: specialUser.displayName,
-                    age: 25,
-                    role: specialUser.role,
-                    hasBlueTick: specialUser.hasBlueTick || false,
-                    hasOrangeTick: specialUser.hasOrangeTick || false,
-                    registeredAt: new Date().toISOString(),
-                    lastLogin: null,
-                    stats: {
-                        wins: 0,
-                        losses: 0,
-                        gamesPlayed: 0,
-                        totalHours: 0
-                    },
-                    settings: {
-                        avatar: 'avatar1',
-                        ownedAvatars: specialUser.role === 'support' ? 
-                            ['avatar1', 'avatar2', 'ninja', 'samurai', 'avatar5', 'avatar6', 'avatar7', 'avatar8'] : 
-                            ['avatar1', 'avatar2', 'ninja', 'samurai'],
-                        gems: specialUser.gems,
-                        coins: specialUser.coins,
-                        editCount: 0
-                    }
-                };
-                this.users[specialUser.phone] = userData;
-            }
-        });
-        this.saveUsers();
-    }
-
-    loadUsers() {
-        try {
-            const savedUsers = localStorage.getItem(STORAGE_KEYS.USERS);
-            return savedUsers ? JSON.parse(savedUsers) : {};
-        } catch (e) {
-            console.error('خطا در بارگذاری کاربران:', e);
-            return {};
-        }
-    }
-
-    saveUsers() {
-        try {
-            localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(this.users));
-        } catch (e) {
-            console.error('خطا در ذخیره کاربران:', e);
-        }
-    }
-
-    isPhoneExists(phone) {
-        return this.users.hasOwnProperty(phone);
-    }
-
-    register(phone, password, displayName, age) {
-        if (this.isPhoneExists(phone)) {
-            return { success: false, message: '❌ این شماره موبایل قبلاً ثبت‌نام کرده است' };
-        }
-
-        const userId = Date.now() + Math.floor(Math.random() * 1000);
-
-        const userData = {
-            id: userId,
-            phone: phone,
-            password: password,
-            displayName: displayName,
-            age: age,
-            role: 'normal',
-            hasBlueTick: false,
-            hasOrangeTick: false,
-            registeredAt: new Date().toISOString(),
-            lastLogin: null,
-            stats: {
-                wins: 0,
-                losses: 0,
-                gamesPlayed: 0,
-                totalHours: 0
+                hasOrangeTick: false
             },
-            settings: {
-                avatar: 'avatar1',
-                ownedAvatars: ['avatar1', 'avatar2'],
-                gems: 100,
-                coins: 600,
-                editCount: 0
+            {
+                phone: '09212327833',
+                userId: 2,
+                name: 'Programmer',
+                gems: 1000,
+                coins: 1000,
+                password: '010101010',
+                role: 'support',
+                hasBlueTick: true,
+                hasOrangeTick: false
+            },
+            {
+                phone: '09053065179',
+                userId: 100,
+                name: '•°Ami®=dar©°•',
+                gems: 2000,
+                coins: 5000,
+                password: 'amirhosein1386',
+                role: 'observer',
+                hasBlueTick: false,
+                hasOrangeTick: true
             }
+        ];
+
+        // ========== کلیدهای ذخیره‌سازی ==========
+        const STORAGE_KEYS = {
+            USERS: 'mafiaSun_users',
+            CURRENT_USER: 'mafiaSun_currentUser',
+            USER_DATA: 'mafiaSun_userData'
         };
 
-        this.users[phone] = userData;
-        this.saveUsers();
-        return { success: true, user: userData };
-    }
-
-    login(phone, password) {
-        const user = this.users[phone];
-        
-        if (!user || user.password !== password) {
-            return { success: false, message: '❌ شماره موبایل یا رمز عبور اشتباه است' };
-        }
-
-        user.lastLogin = new Date().toISOString();
-        this.saveUsers();
-        return { success: true, user: user };
-    }
-
-    getAllUsers() {
-        return Object.values(this.users);
-    }
-
-    getOnlineUsers() {
-        const now = new Date();
-        return Object.values(this.users).filter(user => {
-            if (!user.lastLogin) return false;
-            const lastLogin = new Date(user.lastLogin);
-            const diffMinutes = (now - lastLogin) / (1000 * 60);
-            return diffMinutes < 30;
-        });
-    }
-
-    setCurrentUser(user) {
-        this.currentUser = user;
-        try {
-            localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify({
-                phone: user.phone,
-                loginTime: new Date().toISOString()
-            }));
-
-            const gameData = {
-                userId: user.id,
-                userPhone: user.phone,
-                userName: user.displayName,
-                userRole: user.role,
-                hasBlueTick: user.hasBlueTick,
-                hasOrangeTick: user.hasOrangeTick,
-                isCreator: user.role === 'creator' || user.role === 'support',
-                userGems: user.settings.gems,
-                userCoins: user.settings.coins,
-                ownedAvatars: user.settings.ownedAvatars,
-                currentAvatar: user.settings.avatar,
-                editCount: user.settings.editCount,
-                userStats: user.stats
-            };
-
-            localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(gameData));
-
-            if (user.role === 'creator' || user.role === 'support') {
-                localStorage.setItem('mafiaUserId', user.id.toString());
-                localStorage.setItem('mafiaIsCreator', 'true');
-                localStorage.setItem('mafiaUserName', user.displayName);
-            }
-        } catch (e) {
-            console.error('خطا در ذخیره کاربر فعلی:', e);
-        }
-    }
-
-    isLoggedIn() {
-        try {
-            const saved = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
-            if (saved) {
-                const { phone } = JSON.parse(saved);
-                return !!(phone && this.users[phone]);
-            }
-        } catch (e) {}
-        return false;
-    }
-
-    clearAllData() {
-        localStorage.clear();
-        this.users = {};
-        this.ensureSpecialUsersExist();
-        this.ensureCreatorExists();
-    }
-}
-
-// ========== مدیریت رابط کاربری ==========
-class UIManager {
-    constructor(userManager) {
-        this.userManager = userManager;
-        this.initTabs();
-        this.initAgeSelector();
-        this.initForms();
-        this.checkAutoLogin();
-    }
-
-    showLoading(message = 'در حال پردازش...') {
-        const overlay = document.getElementById('loadingOverlay');
-        const text = document.getElementById('loadingText');
-        if (overlay && text) {
-            text.textContent = message;
-            overlay.style.display = 'flex';
-        }
-    }
-
-    hideLoading() {
-        const overlay = document.getElementById('loadingOverlay');
-        if (overlay) overlay.style.display = 'none';
-    }
-
-    showError(message, elementId = 'globalError') {
-        const errorElement = document.getElementById(elementId);
-        if (errorElement) {
-            errorElement.textContent = message;
-            errorElement.style.display = 'block';
-            setTimeout(() => errorElement.style.display = 'none', 3000);
-        }
-    }
-
-    showSuccess(message, elementId = 'globalSuccess') {
-        const successElement = document.getElementById(elementId);
-        if (successElement) {
-            successElement.textContent = message;
-            successElement.style.display = 'block';
-            setTimeout(() => successElement.style.display = 'none', 3000);
-        }
-    }
-
-    clearErrors() {
-        document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
-    }
-
-    checkAutoLogin() {
-        if (this.userManager.isLoggedIn()) {
-            this.showLoading('در حال انتقال به بازی...');
-            setTimeout(() => window.location.href = GAME_PAGE_URL, 1000);
-        }
-    }
-
-    initTabs() {
-        const loginTab = document.getElementById('loginTab');
-        const signupTab = document.getElementById('signupTab');
-        const loginSection = document.getElementById('login-section');
-        const signupSection = document.getElementById('signup-section');
-
-        if (loginTab && signupTab) {
-            loginTab.addEventListener('click', () => {
-                loginTab.classList.add('active');
-                signupTab.classList.remove('active');
-                loginSection.classList.add('active');
-                signupSection.classList.remove('active');
-                this.clearErrors();
-            });
-
-            signupTab.addEventListener('click', () => {
-                signupTab.classList.add('active');
-                loginTab.classList.remove('active');
-                signupSection.classList.add('active');
-                loginSection.classList.remove('active');
-                this.clearErrors();
-            });
-        }
-    }
-
-    initAgeSelector() {
-        const minusBtn = document.querySelector('.minus-btn');
-        const plusBtn = document.querySelector('.plus-btn');
-        const ageDisplay = document.querySelector('.age-display');
-        const ageInput = document.getElementById('age');
-
-        if (minusBtn && plusBtn && ageDisplay && ageInput) {
-            let currentAge = 18;
-
-            minusBtn.addEventListener('click', () => {
-                if (currentAge > 13) {
-                    currentAge--;
-                    ageDisplay.textContent = currentAge;
-                    ageInput.value = currentAge;
-                }
-            });
-
-            plusBtn.addEventListener('click', () => {
-                if (currentAge < 100) {
-                    currentAge++;
-                    ageDisplay.textContent = currentAge;
-                    ageInput.value = currentAge;
-                }
-            });
-        }
-    }
-
-    validatePhone(phone) {
-        return /^09[0-9]{9}$/.test(phone);
-    }
-
-    updateAdminPanel() {
-        const adminPanel = document.getElementById('adminPanel');
-        const totalUsers = document.getElementById('totalUsers');
-        const onlineUsers = document.getElementById('onlineUsers');
-        const userList = document.getElementById('userList');
-
-        if (!adminPanel || !totalUsers || !onlineUsers || !userList) return;
-
-        const allUsers = this.userManager.getAllUsers();
-        const online = this.userManager.getOnlineUsers();
-
-        totalUsers.textContent = allUsers.length;
-        onlineUsers.textContent = online.length;
-
-        let userListHTML = '';
-        allUsers.slice(0, 10).forEach(user => {
-            let roleClass = 'role-normal';
-            let roleText = 'عادی';
-            
-            if (user.role === 'creator') {
-                roleClass = 'role-creator';
-                roleText = 'سازنده';
-            } else if (user.role === 'support') {
-                roleClass = 'role-support';
-                roleText = 'پشتیبانی';
-            } else if (user.role === 'observer') {
-                roleClass = 'role-observer';
-                roleText = 'ناظر';
+        // ========== مدیریت کاربران ==========
+        class UserManager {
+            constructor() {
+                this.users = this.loadUsers();
+                this.currentUser = null;
+                this.ensureSpecialUsersExist();
+                this.ensureCreatorExists();
             }
 
-            const isOnline = online.some(u => u.phone === user.phone);
-
-            userListHTML += `
-                <div class="user-item">
-                    <div class="user-info">
-                        <div class="user-avatar">${user.displayName.charAt(0)}</div>
-                        <div class="user-details">
-                            <div class="user-name">${user.displayName}</div>
-                            <div class="user-phone">${user.phone}</div>
-                        </div>
-                    </div>
-                    <div class="user-role ${roleClass}">${roleText}</div>
-                </div>
-            `;
-        });
-
-        if (allUsers.length > 10) {
-            userListHTML += `<div style="text-align: center; color: var(--dark-text-secondary); padding: 10px;">و ${allUsers.length - 10} کاربر دیگر...</div>`;
-        }
-
-        userList.innerHTML = userListHTML || '<div style="text-align: center; color: var(--dark-text-secondary); padding: 20px;">کاربری وجود ندارد</div>';
-    }
-
-    initForms() {
-        const loginForm = document.getElementById('loginForm');
-        if (loginForm) {
-            loginForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                this.clearErrors();
-
-                const phone = document.getElementById('login-phone').value.trim();
-                const password = document.getElementById('login-password').value.trim();
-
-                if (!this.validatePhone(phone)) {
-                    this.showError('شماره موبایل معتبر نیست (مثال: 09123456789)', 'login-phone-error');
-                    return;
-                }
-
-                if (password.length < 6) {
-                    this.showError('رمز عبور باید حداقل ۶ کاراکتر باشد', 'login-password-error');
-                    return;
-                }
-
-                this.showLoading('در حال ورود...');
-
-                setTimeout(() => {
-                    const result = this.userManager.login(phone, password);
-
-                    if (result.success) {
-                        this.userManager.setCurrentUser(result.user);
-                        
-                        if (result.user.role === 'creator') {
-                            document.getElementById('creatorInfo').style.display = 'block';
-                            document.getElementById('supportInfo').style.display = 'none';
-                            document.getElementById('observerInfo').style.display = 'none';
-                            this.showSuccess('خوش آمدید سازنده بازی!');
-                            adminPanel.style.display = 'block';
-                            this.updateAdminPanel();
-                        } else if (result.user.role === 'support') {
-                            document.getElementById('supportInfo').style.display = 'flex';
-                            document.getElementById('creatorInfo').style.display = 'none';
-                            document.getElementById('observerInfo').style.display = 'none';
-                            this.showSuccess('خوش آمدید! شما عضو تیم پشتیبانی هستید');
-                            adminPanel.style.display = 'block';
-                            this.updateAdminPanel();
-                        } else if (result.user.role === 'observer') {
-                            document.getElementById('observerInfo').style.display = 'flex';
-                            document.getElementById('creatorInfo').style.display = 'none';
-                            document.getElementById('supportInfo').style.display = 'none';
-                            this.showSuccess('خوش آمدید! شما مقام ناظر دارید');
-                            adminPanel.style.display = 'none';
-                        } else {
-                            document.getElementById('creatorInfo').style.display = 'none';
-                            document.getElementById('supportInfo').style.display = 'none';
-                            document.getElementById('observerInfo').style.display = 'none';
-                            this.showSuccess('ورود موفقیت‌آمیز!');
-                            adminPanel.style.display = 'none';
+            ensureCreatorExists() {
+                if (!this.isPhoneExists(CREATOR_PHONE)) {
+                    const creatorUser = {
+                        id: 1,
+                        phone: CREATOR_PHONE,
+                        password: CREATOR_PASSWORD,
+                        name: 'ᴀᴍᴏᴍɪᴛɪ',
+                        age: 30,
+                        role: 'creator',
+                        hasBlueTick: true,
+                        hasOrangeTick: false,
+                        gems: Infinity,
+                        coins: Infinity,
+                        registeredAt: new Date().toISOString(),
+                        lastLogin: null,
+                        stats: {
+                            wins: 0,
+                            losses: 0,
+                            gamesPlayed: 0,
+                            totalHours: 0
+                        },
+                        settings: {
+                            avatar: 'avatar1',
+                            ownedAvatars: ['avatar1', 'avatar2', 'ninja', 'samurai', 'avatar5', 'avatar6', 'avatar7', 'avatar8', 'avatar9', 'avatar10', 'avatar11', 'avatar12'],
+                            editCount: 0
                         }
-                        
-                        setTimeout(() => window.location.href = GAME_PAGE_URL, 1000);
-                    } else {
-                        this.hideLoading();
-                        this.showError(result.message, 'login-phone-error');
+                    };
+                    this.users[CREATOR_PHONE] = creatorUser;
+                    this.saveUsers();
+                }
+            }
+
+            ensureSpecialUsersExist() {
+                SPECIAL_USERS.forEach(specialUser => {
+                    if (!this.isPhoneExists(specialUser.phone)) {
+                        const userData = {
+                            id: specialUser.userId,
+                            phone: specialUser.phone,
+                            password: specialUser.password,
+                            name: specialUser.name,
+                            age: 25,
+                            role: specialUser.role,
+                            hasBlueTick: specialUser.hasBlueTick || false,
+                            hasOrangeTick: specialUser.hasOrangeTick || false,
+                            gems: specialUser.gems,
+                            coins: specialUser.coins,
+                            registeredAt: new Date().toISOString(),
+                            lastLogin: null,
+                            stats: {
+                                wins: 0,
+                                losses: 0,
+                                gamesPlayed: 0,
+                                totalHours: 0
+                            },
+                            settings: {
+                                avatar: 'avatar1',
+                                ownedAvatars: specialUser.role === 'support' ? 
+                                    ['avatar1', 'avatar2', 'ninja', 'samurai', 'avatar5', 'avatar6', 'avatar7', 'avatar8'] : 
+                                    ['avatar1', 'avatar2', 'ninja', 'samurai'],
+                                editCount: 0
+                            }
+                        };
+                        this.users[specialUser.phone] = userData;
                     }
-                }, 800);
-            });
+                });
+                this.saveUsers();
+            }
+
+            loadUsers() {
+                try {
+                    const savedUsers = localStorage.getItem(STORAGE_KEYS.USERS);
+                    return savedUsers ? JSON.parse(savedUsers) : {};
+                } catch (e) {
+                    console.error('خطا در بارگذاری کاربران:', e);
+                    return {};
+                }
+            }
+
+            saveUsers() {
+                try {
+                    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(this.users));
+                } catch (e) {
+                    console.error('خطا در ذخیره کاربران:', e);
+                }
+            }
+
+            isPhoneExists(phone) {
+                return this.users.hasOwnProperty(phone);
+            }
+
+            login(phone, password) {
+                const user = this.users[phone];
+                
+                if (!user || user.password !== password) {
+                    return { success: false, message: '❌ شماره موبایل یا رمز عبور اشتباه است' };
+                }
+
+                user.lastLogin = new Date().toISOString();
+                this.saveUsers();
+                return { success: true, user: user };
+            }
+
+            setCurrentUser(user) {
+                this.currentUser = user;
+                try {
+                    localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify({
+                        phone: user.phone,
+                        loginTime: new Date().toISOString()
+                    }));
+
+                    const gameData = {
+                        userId: user.id,
+                        userPhone: user.phone,
+                        userName: user.name,
+                        userRole: user.role,
+                        hasBlueTick: user.hasBlueTick,
+                        hasOrangeTick: user.hasOrangeTick,
+                        isCreator: user.role === 'creator' || user.role === 'support',
+                        userGems: user.gems,
+                        userCoins: user.coins,
+                        ownedAvatars: user.settings.ownedAvatars,
+                        currentAvatar: user.settings.avatar,
+                        editCount: user.settings.editCount,
+                        userStats: user.stats
+                    };
+
+                    localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(gameData));
+
+                    if (user.role === 'creator' || user.role === 'support') {
+                        localStorage.setItem('mafiaUserId', user.id.toString());
+                        localStorage.setItem('mafiaIsCreator', 'true');
+                        localStorage.setItem('mafiaUserName', user.name);
+                    }
+                } catch (e) {
+                    console.error('خطا در ذخیره کاربر فعلی:', e);
+                }
+            }
         }
 
-        const signupForm = document.getElementById('signupForm');
-        if (signupForm) {
-            signupForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                this.clearErrors();
+        // ========== مدیریت رابط کاربری ==========
+        class UIManager {
+            constructor(userManager) {
+                this.userManager = userManager;
+                this.initTabs();
+                this.initAgeSelector();
+                this.initForms();
+            }
 
-                const phone = document.getElementById('signup-phone').value.trim();
-                const displayName = document.getElementById('display-name').value.trim();
-                const password = document.getElementById('signup-password').value.trim();
-                const age = document.getElementById('age').value;
-
-                if (!this.validatePhone(phone)) {
-                    this.showError('شماره موبایل معتبر نیست (مثال: 09123456789)', 'signup-phone-error');
-                    return;
+            showLoading(message = 'در حال پردازش...') {
+                const overlay = document.getElementById('loadingOverlay');
+                const text = document.getElementById('loadingText');
+                if (overlay && text) {
+                    text.textContent = message;
+                    overlay.style.display = 'flex';
                 }
+            }
 
-                if (displayName.length < 3) {
-                    this.showError('نام نمایشی باید حداقل ۳ کاراکتر باشد', 'display-name-error');
-                    return;
+            hideLoading() {
+                const overlay = document.getElementById('loadingOverlay');
+                if (overlay) overlay.style.display = 'none';
+            }
+
+            showError(message, elementId = 'globalError') {
+                const errorElement = document.getElementById(elementId);
+                if (errorElement) {
+                    errorElement.textContent = message;
+                    errorElement.style.display = 'block';
+                    setTimeout(() => errorElement.style.display = 'none', 3000);
                 }
+            }
 
-                if (password.length < 8) {
-                    this.showError('رمز عبور باید حداقل ۸ کاراکتر باشد', 'signup-password-error');
-                    return;
+            showSuccess(message, elementId = 'globalSuccess') {
+                const successElement = document.getElementById(elementId);
+                if (successElement) {
+                    successElement.textContent = message;
+                    successElement.style.display = 'block';
+                    setTimeout(() => successElement.style.display = 'none', 3000);
                 }
+            }
 
-                if (this.userManager.isPhoneExists(phone)) {
-                    this.showError('این شماره موبایل قبلاً ثبت‌نام کرده است', 'signup-phone-error');
-                    return;
+            clearErrors() {
+                document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
+            }
+
+            initTabs() {
+                const loginTab = document.getElementById('loginTab');
+                const signupTab = document.getElementById('signupTab');
+                const loginSection = document.getElementById('login-section');
+                const signupSection = document.getElementById('signup-section');
+
+                if (loginTab && signupTab) {
+                    loginTab.addEventListener('click', () => {
+                        loginTab.classList.add('active');
+                        signupTab.classList.remove('active');
+                        loginSection.classList.add('active');
+                        signupSection.classList.remove('active');
+                        this.clearErrors();
+                    });
+
+                    signupTab.addEventListener('click', () => {
+                        signupTab.classList.add('active');
+                        loginTab.classList.remove('active');
+                        signupSection.classList.add('active');
+                        loginSection.classList.remove('active');
+                        this.clearErrors();
+                    });
                 }
+            }
 
-                this.showLoading('در حال ثبت‌نام...');
+            initAgeSelector() {
+                const minusBtn = document.querySelector('.minus-btn');
+                const plusBtn = document.querySelector('.plus-btn');
+                const ageDisplay = document.querySelector('.age-display');
+                const ageInput = document.getElementById('age');
 
-                setTimeout(() => {
-                    const result = this.userManager.register(phone, password, displayName, parseInt(age));
+                if (minusBtn && plusBtn && ageDisplay && ageInput) {
+                    let currentAge = 18;
 
-                    if (result.success) {
-                        this.userManager.setCurrentUser(result.user);
-                        
-                        document.getElementById('creatorInfo').style.display = 'none';
-                        document.getElementById('supportInfo').style.display = 'none';
-                        document.getElementById('observerInfo').style.display = 'none';
-                        this.showSuccess('ثبت‌نام موفقیت‌آمیز!');
-                        adminPanel.style.display = 'none';
-                        
-                        setTimeout(() => window.location.href = GAME_PAGE_URL, 1000);
-                    } else {
-                        this.hideLoading();
-                        this.showError(result.message, 'signup-phone-error');
-                    }
-                }, 800);
-            });
+                    minusBtn.addEventListener('click', () => {
+                        if (currentAge > 13) {
+                            currentAge--;
+                            ageDisplay.textContent = currentAge;
+                            ageInput.value = currentAge;
+                        }
+                    });
+
+                    plusBtn.addEventListener('click', () => {
+                        if (currentAge < 100) {
+                            currentAge++;
+                            ageDisplay.textContent = currentAge;
+                            ageInput.value = currentAge;
+                        }
+                    });
+                }
+            }
+
+            validatePhone(phone) {
+                return /^09[0-9]{9}$/.test(phone);
+            }
+
+            initForms() {
+                const loginForm = document.getElementById('loginForm');
+                if (loginForm) {
+                    loginForm.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        this.clearErrors();
+
+                        const phone = document.getElementById('login-phone').value.trim();
+                        const password = document.getElementById('login-password').value.trim();
+
+                        if (!this.validatePhone(phone)) {
+                            this.showError('شماره موبایل معتبر نیست (مثال: 09123456789)', 'login-phone-error');
+                            return;
+                        }
+
+                        if (password.length < 6) {
+                            this.showError('رمز عبور باید حداقل ۶ کاراکتر باشد', 'login-password-error');
+                            return;
+                        }
+
+                        this.showLoading('در حال ورود...');
+
+                        setTimeout(() => {
+                            const result = this.userManager.login(phone, password);
+
+                            if (result.success) {
+                                this.userManager.setCurrentUser(result.user);
+                                
+                                if (result.user.role === 'creator') {
+                                    document.getElementById('creatorRoleInfo').style.display = 'flex';
+                                    document.getElementById('supportInfo').style.display = 'none';
+                                    document.getElementById('observerInfo').style.display = 'none';
+                                    document.getElementById('creatorInfo').style.display = 'none';
+                                    this.showSuccess('خوش آمدید سازنده بازی!');
+                                } else if (result.user.role === 'support') {
+                                    document.getElementById('supportInfo').style.display = 'flex';
+                                    document.getElementById('creatorRoleInfo').style.display = 'none';
+                                    document.getElementById('observerInfo').style.display = 'none';
+                                    document.getElementById('creatorInfo').style.display = 'none';
+                                    this.showSuccess('خوش آمدید! شما عضو تیم پشتیبانی هستید');
+                                } else if (result.user.role === 'observer') {
+                                    document.getElementById('observerInfo').style.display = 'flex';
+                                    document.getElementById('creatorRoleInfo').style.display = 'none';
+                                    document.getElementById('supportInfo').style.display = 'none';
+                                    document.getElementById('creatorInfo').style.display = 'none';
+                                    this.showSuccess('خوش آمدید! شما مقام ناظر دارید');
+                                } else {
+                                    document.getElementById('creatorRoleInfo').style.display = 'none';
+                                    document.getElementById('supportInfo').style.display = 'none';
+                                    document.getElementById('observerInfo').style.display = 'none';
+                                    document.getElementById('creatorInfo').style.display = 'none';
+                                    this.showSuccess('ورود موفقیت‌آمیز!');
+                                }
+                                
+                                setTimeout(() => window.location.href = GAME_PAGE_URL, 1000);
+                            } else {
+                                this.hideLoading();
+                                this.showError(result.message, 'login-phone-error');
+                            }
+                        }, 800);
+                    });
+                }
+            }
         }
 
-        document.querySelectorAll('input').forEach(input => {
-            input.addEventListener('input', () => {
-                const errorId = input.id + '-error';
-                const errorElement = document.getElementById(errorId);
-                if (errorElement) errorElement.style.display = 'none';
-            });
+        // ========== راه‌اندازی ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 راه‌اندازی صفحه ثبت‌نام...');
+            
+            const userManager = new UserManager();
+            const uiManager = new UIManager(userManager);
+            
+            window.userManager = userManager;
+            window.uiManager = uiManager;
+            
+            console.log('✅ راه‌اندازی کامل شد');
+            console.log('👑 شماره سازنده:', CREATOR_PHONE);
+            console.log('🔑 رمز سازنده:', CREATOR_PASSWORD);
+            console.log('📱 شماره‌های ویژه:', SPECIAL_USERS.map(u => u.phone).join(', '));
         });
-    }
-}
-
-// ========== توابع گلوبال ==========
-function clearAllData() {
-    if (confirm('⚠️ آیا از پاک کردن همه داده‌ها اطمینان دارید؟ این عمل غیرقابل بازگشت است!')) {
-        localStorage.clear();
-        alert('✅ همه داده‌ها پاک شدند. صفحه دوباره بارگذاری می‌شود.');
-        window.location.reload();
-    }
-}
-
-function resetGame() {
-    if (confirm('⚠️ آیا از ریست کردن بازی اطمینان دارید؟')) {
-        localStorage.removeItem('mafiaSun_lobbies');
-        localStorage.removeItem('mafiaSun_blacklist');
-        localStorage.removeItem('mafiaReports');
-        localStorage.removeItem('mafiaTempBans');
-        alert('✅ بازی ریست شد.');
-    }
-}
-
-// ========== راه‌اندازی ==========
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 راه‌اندازی صفحه ثبت‌نام...');
-    
-    const userManager = new UserManager();
-    const uiManager = new UIManager(userManager);
-    
-    window.userManager = userManager;
-    window.uiManager = uiManager;
-    window.clearAllData = clearAllData;
-    window.resetGame = resetGame;
-    
-    console.log('✅ راه‌اندازی کامل شد');
-    console.log('👑 شماره سازنده:', CREATOR_PHONE);
-    console.log('🔑 رمز سازنده:', CREATOR_PASSWORD);
-    console.log('📱 شماره‌های ویژه:', SPECIAL_USERS.map(u => u.phone).join(', '));
-});
     </script>
 </body>
 </html>
