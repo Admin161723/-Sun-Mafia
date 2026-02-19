@@ -559,7 +559,7 @@
             CURRENT_USER: 'mafiaSun_currentUser',
             USER_DATA: 'mafiaSun_userData',
             REMEMBER_ME: 'mafiaSun_rememberMe',
-            SESSION_USER: 'mafiaSun_sessionUser'
+            LOGGED_IN: 'mafiaSun_loggedIn'
         };
 
         // ========== مدیریت کاربران ==========
@@ -661,7 +661,7 @@
                 return this.users.hasOwnProperty(phone);
             }
 
-            login(phone, password, rememberMe = true) {
+            login(phone, password) {
                 const user = this.users[phone];
                 
                 if (!user || user.password !== password) {
@@ -671,35 +671,22 @@
                 user.lastLogin = new Date().toISOString();
                 this.saveUsers();
                 
-                // ذخیره وضعیت ورود
-                if (rememberMe) {
-                    // ذخیره دائمی
-                    localStorage.setItem(STORAGE_KEYS.REMEMBER_ME, JSON.stringify({
-                        phone: user.phone,
-                        loginTime: new Date().toISOString()
-                    }));
-                    localStorage.removeItem(STORAGE_KEYS.SESSION_USER); // پاک کردن session
-                } else {
-                    // ذخیره موقت (فقط برای این جلسه)
-                    sessionStorage.setItem(STORAGE_KEYS.SESSION_USER, JSON.stringify({
-                        phone: user.phone,
-                        loginTime: new Date().toISOString()
-                    }));
-                    localStorage.removeItem(STORAGE_KEYS.REMEMBER_ME); // پاک کردن remember me
-                }
-                
                 return { success: true, user: user };
             }
 
-            setCurrentUser(user) {
+            setCurrentUser(user, rememberMe = true) {
                 this.currentUser = user;
                 try {
-                    // همیشه current user رو ذخیره کن برای استفاده در بازی
+                    // ذخیره اطلاعات کاربر فعلی
                     localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify({
                         phone: user.phone,
                         loginTime: new Date().toISOString()
                     }));
 
+                    // ذخیره وضعیت لاگین
+                    localStorage.setItem(STORAGE_KEYS.LOGGED_IN, 'true');
+
+                    // ذخیره اطلاعات بازی
                     const gameData = {
                         userId: user.id,
                         userPhone: user.phone,
@@ -718,6 +705,13 @@
 
                     localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(gameData));
 
+                    // ذخیره وضعیت remember me
+                    if (rememberMe) {
+                        localStorage.setItem(STORAGE_KEYS.REMEMBER_ME, 'true');
+                    } else {
+                        localStorage.removeItem(STORAGE_KEYS.REMEMBER_ME);
+                    }
+
                     if (user.role === 'creator' || user.role === 'support') {
                         localStorage.setItem('mafiaUserId', user.id.toString());
                         localStorage.setItem('mafiaIsCreator', 'true');
@@ -728,38 +722,29 @@
                 }
             }
 
-            checkAutoLogin() {
-                // اول بررسی کن remember me هست یا نه
-                const rememberMe = localStorage.getItem(STORAGE_KEYS.REMEMBER_ME);
-                if (rememberMe) {
-                    try {
-                        const { phone } = JSON.parse(rememberMe);
-                        const user = this.users[phone];
-                        
-                        if (user) {
-                            console.log('✅ ورود خودکار (remember me) انجام شد برای:', phone);
-                            this.setCurrentUser(user);
-                            return user;
-                        }
-                    } catch (e) {
-                        console.error('خطا در ورود خودکار:', e);
-                    }
-                }
+            checkLoggedIn() {
+                // بررسی وجود لاگین
+                const loggedIn = localStorage.getItem(STORAGE_KEYS.LOGGED_IN);
+                const currentUser = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
                 
-                // بعد بررسی کن session هست یا نه
-                const sessionUser = sessionStorage.getItem(STORAGE_KEYS.SESSION_USER);
-                if (sessionUser) {
+                if (loggedIn === 'true' && currentUser) {
                     try {
-                        const { phone } = JSON.parse(sessionUser);
+                        const { phone } = JSON.parse(currentUser);
                         const user = this.users[phone];
                         
                         if (user) {
-                            console.log('✅ ورود خودکار (session) انجام شد برای:', phone);
-                            this.setCurrentUser(user);
+                            console.log('✅ کاربر قبلاً وارد شده بود:', phone);
+                            
+                            // بازیابی اطلاعات بازی
+                            const gameData = localStorage.getItem(STORAGE_KEYS.USER_DATA);
+                            if (gameData) {
+                                console.log('✅ اطلاعات بازی بازیابی شد');
+                            }
+                            
                             return user;
                         }
                     } catch (e) {
-                        console.error('خطا در ورود خودکار:', e);
+                        console.error('خطا در بررسی لاگین:', e);
                     }
                 }
                 
@@ -767,10 +752,10 @@
             }
 
             logout() {
+                localStorage.removeItem(STORAGE_KEYS.LOGGED_IN);
                 localStorage.removeItem(STORAGE_KEYS.REMEMBER_ME);
-                sessionStorage.removeItem(STORAGE_KEYS.SESSION_USER);
                 localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
-                localStorage.removeItem(STORAGE_KEYS.USER_DATA);
+                // USER_DATA رو پاک نمی‌کنیم چون اطلاعات بازی نیاز هست
             }
         }
 
@@ -781,7 +766,7 @@
                 this.initTabs();
                 this.initAgeSelector();
                 this.initForms();
-                this.checkAutoLogin();
+                this.checkLoggedIn();
             }
 
             showLoading(message = 'در حال پردازش...') {
@@ -820,8 +805,8 @@
                 document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
             }
 
-            checkAutoLogin() {
-                const user = this.userManager.checkAutoLogin();
+            checkLoggedIn() {
+                const user = this.userManager.checkLoggedIn();
                 
                 if (user) {
                     // نمایش پیام انتقال خودکار
@@ -931,10 +916,10 @@
                         this.showLoading('در حال ورود...');
 
                         setTimeout(() => {
-                            const result = this.userManager.login(phone, password, rememberMe);
+                            const result = this.userManager.login(phone, password);
 
                             if (result.success) {
-                                this.userManager.setCurrentUser(result.user);
+                                this.userManager.setCurrentUser(result.user, rememberMe);
                                 
                                 if (result.user.role === 'creator') {
                                     document.getElementById('creatorRoleInfo').style.display = 'flex';
@@ -1035,21 +1020,7 @@
 
                             this.userManager.users[phone] = newUser;
                             this.userManager.saveUsers();
-                            
-                            // ذخیره وضعیت ورود
-                            if (rememberMe) {
-                                localStorage.setItem(STORAGE_KEYS.REMEMBER_ME, JSON.stringify({
-                                    phone: newUser.phone,
-                                    loginTime: new Date().toISOString()
-                                }));
-                            } else {
-                                sessionStorage.setItem(STORAGE_KEYS.SESSION_USER, JSON.stringify({
-                                    phone: newUser.phone,
-                                    loginTime: new Date().toISOString()
-                                }));
-                            }
-                            
-                            this.userManager.setCurrentUser(newUser);
+                            this.userManager.setCurrentUser(newUser, rememberMe);
 
                             this.showSuccess('ثبت‌نام موفقیت‌آمیز!');
                             
