@@ -370,16 +370,16 @@
             left: 50%;
             transform: translate(-50%, -50%);
             width: 90%;
-            max-width: 500px;
+            max-width: 600px;
             background: linear-gradient(145deg, #2a0a0a, #1a0505);
             border: 4px solid #ff5555;
             border-radius: 30px;
             padding: 40px 30px;
-            z-index: 50000;
-            display: none;
+            z-index: 100000;
             box-shadow: 0 30px 60px rgba(0,0,0,0.8), 0 0 50px rgba(255,85,85,0.5);
             animation: banPulse 2s infinite;
             text-align: center;
+            display: none;
         }
 
         @keyframes banPulse {
@@ -467,6 +467,24 @@
             transform: scale(1.1);
             background: #ff4444;
             box-shadow: 0 0 30px rgba(255,85,85,0.8);
+        }
+
+        .clear-data-btn {
+            background: rgba(255, 85, 85, 0.2);
+            color: #ff5555;
+            border: 1px solid #ff5555;
+            padding: 10px 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .clear-data-btn:hover {
+            background: #ff5555;
+            color: white;
         }
 
         @media (max-width: 480px) {
@@ -596,6 +614,10 @@
                         <i class="fas fa-door-open"></i> ورود و شروع بازی
                     </button>
                 </form>
+                
+                <button class="clear-data-btn" onclick="clearAllData()">
+                    <i class="fas fa-trash"></i> پاک کردن همه داده‌ها (برای رفع مشکل ورود خودکار بن)
+                </button>
             </div>
 
             <div id="signup-section" class="form-section">
@@ -708,6 +730,16 @@
             TEMP_BANS: 'mafiaSun_tempBans'
         };
 
+        // ========== تابع پاک کردن همه داده‌ها ==========
+        function clearAllData() {
+            if (confirm('آیا از پاک کردن همه داده‌ها اطمینان دارید؟ این عمل غیرقابل بازگشت است!')) {
+                localStorage.clear();
+                sessionStorage.clear();
+                alert('✅ همه داده‌ها پاک شدند. صفحه دوباره بارگذاری می‌شود.');
+                window.location.reload();
+            }
+        }
+
         // ========== تابع نمایش پیام بن ==========
         function showBanMessage(banInfo) {
             const banModal = document.getElementById('banMessage');
@@ -719,13 +751,23 @@
             banReason.innerHTML = `📝 دلیل: ${banInfo.reason || 'تخلف'}`;
             bannedBy.innerHTML = `👤 بن شده توسط: ${banInfo.bannedByName || 'مدیریت'}`;
             
+            // پاک کردن کامل اطلاعات لاگین
+            localStorage.removeItem(STORAGE_KEYS.LOGGED_IN);
+            localStorage.removeItem(STORAGE_KEYS.REMEMBER_ME);
+            localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+            localStorage.removeItem(STORAGE_KEYS.USER_DATA);
+            sessionStorage.clear();
+            
             if (banInfo.expiry) {
                 const expiryDate = new Date(banInfo.expiry).toLocaleString('fa-IR');
                 banDuration.innerHTML = `⏳ مدت بن: موقت (تا ${expiryDate})`;
                 
                 // شروع شمارش معکوس
                 updateCountdown(banInfo.expiry);
-                setInterval(() => updateCountdown(banInfo.expiry), 1000);
+                const interval = setInterval(() => updateCountdown(banInfo.expiry), 1000);
+                
+                // ذخیره interval برای پاک کردن بعداً
+                window.banInterval = interval;
             } else {
                 banDuration.innerHTML = `🚫 مدت بن: دائمی`;
                 if (banCountdown) banCountdown.style.display = 'none';
@@ -733,10 +775,10 @@
             
             banModal.style.display = 'block';
             
-            // لاگ اوت کردن کاربر
-            localStorage.removeItem(STORAGE_KEYS.LOGGED_IN);
-            localStorage.removeItem(STORAGE_KEYS.REMEMBER_ME);
-            localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+            // مخفی کردن فرم ورود
+            document.getElementById('login-section').style.display = 'none';
+            document.getElementById('signup-section').style.display = 'none';
+            document.querySelector('.tabs').style.display = 'none';
         }
         
         function updateCountdown(expiryTime) {
@@ -746,6 +788,9 @@
             
             if (diff <= 0) {
                 banCountdown.innerHTML = '⏰ مدت بن به پایان رسیده، می‌توانید دوباره وارد شوید';
+                if (window.banInterval) {
+                    clearInterval(window.banInterval);
+                }
                 return;
             }
             
@@ -758,6 +803,8 @@
         
         function closeBanMessage() {
             document.getElementById('banMessage').style.display = 'none';
+            // بعد از بستن پیام بن، صفحه را رفرش کن
+            window.location.reload();
         }
 
         // ========== مدیریت کاربران ==========
@@ -786,7 +833,13 @@
                     if (saved) {
                         const bans = JSON.parse(saved);
                         const now = Date.now();
-                        return bans.filter(ban => ban.expiry > now);
+                        // فیلتر کردن بن‌های منقضی شده
+                        const activeBans = bans.filter(ban => ban.expiry > now);
+                        // ذخیره مجدد بن‌های فعال
+                        if (activeBans.length !== bans.length) {
+                            localStorage.setItem(STORAGE_KEYS.TEMP_BANS, JSON.stringify(activeBans));
+                        }
+                        return activeBans;
                     }
                     return [];
                 } catch (e) {
@@ -948,6 +1001,7 @@
             setCurrentUser(user, rememberMe = true) {
                 this.currentUser = user;
                 try {
+                    // ذخیره اطلاعات کاربر فعلی
                     localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify({
                         phone: user.phone,
                         loginTime: new Date().toISOString()
@@ -1000,10 +1054,11 @@
                         // بررسی بن بودن کاربر قبل از اجازه ورود
                         const banStatus = this.checkUserBan(phone);
                         if (banStatus) {
-                            // پاک کردن اطلاعات لاگین
+                            // پاک کردن کامل اطلاعات لاگین
                             localStorage.removeItem(STORAGE_KEYS.LOGGED_IN);
                             localStorage.removeItem(STORAGE_KEYS.REMEMBER_ME);
                             localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+                            localStorage.removeItem(STORAGE_KEYS.USER_DATA);
                             
                             // نمایش پیام بن
                             setTimeout(() => {
@@ -1209,6 +1264,8 @@
                             } else {
                                 this.hideLoading();
                                 if (result.banned) {
+                                    // پاک کردن هرگونه اطلاعات لاگین قبلی
+                                    this.userManager.logout();
                                     showBanMessage(result.banInfo);
                                 } else {
                                     this.showError(result.message, 'login-phone-error');
@@ -1302,6 +1359,7 @@
             window.userManager = userManager;
             window.uiManager = uiManager;
             window.closeBanMessage = closeBanMessage;
+            window.clearAllData = clearAllData;
             
             console.log('✅ راه‌اندازی کامل شد');
             console.log('👑 شماره سازنده:', CREATOR_PHONE);
