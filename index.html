@@ -443,6 +443,11 @@
                         <div class="error-message" id="login-password-error"></div>
                     </div>
 
+                    <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+                        <input type="checkbox" id="remember-me" checked style="width: 20px; height: 20px;">
+                        <label for="remember-me" style="margin: 0; color: var(--dark-text);">مرا به خاطر بسپار</label>
+                    </div>
+
                     <button type="submit" class="submit-btn" id="loginBtn">
                         <i class="fas fa-door-open"></i> ورود و شروع بازی
                     </button>
@@ -487,6 +492,11 @@
                         </div>
                         <div class="age-label">سال</div>
                         <input type="hidden" id="age" name="age" value="18">
+                    </div>
+
+                    <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+                        <input type="checkbox" id="remember-me-signup" checked style="width: 20px; height: 20px;">
+                        <label for="remember-me-signup" style="margin: 0; color: var(--dark-text);">مرا به خاطر بسپار</label>
                     </div>
 
                     <button type="submit" class="submit-btn" id="signupBtn">
@@ -548,7 +558,8 @@
             USERS: 'mafiaSun_users',
             CURRENT_USER: 'mafiaSun_currentUser',
             USER_DATA: 'mafiaSun_userData',
-            AUTO_LOGIN: 'mafiaSun_autoLogin'
+            REMEMBER_ME: 'mafiaSun_rememberMe',
+            SESSION_USER: 'mafiaSun_sessionUser'
         };
 
         // ========== مدیریت کاربران ==========
@@ -650,7 +661,7 @@
                 return this.users.hasOwnProperty(phone);
             }
 
-            login(phone, password) {
+            login(phone, password, rememberMe = true) {
                 const user = this.users[phone];
                 
                 if (!user || user.password !== password) {
@@ -659,19 +670,35 @@
 
                 user.lastLogin = new Date().toISOString();
                 this.saveUsers();
+                
+                // ذخیره وضعیت ورود
+                if (rememberMe) {
+                    // ذخیره دائمی
+                    localStorage.setItem(STORAGE_KEYS.REMEMBER_ME, JSON.stringify({
+                        phone: user.phone,
+                        loginTime: new Date().toISOString()
+                    }));
+                    localStorage.removeItem(STORAGE_KEYS.SESSION_USER); // پاک کردن session
+                } else {
+                    // ذخیره موقت (فقط برای این جلسه)
+                    sessionStorage.setItem(STORAGE_KEYS.SESSION_USER, JSON.stringify({
+                        phone: user.phone,
+                        loginTime: new Date().toISOString()
+                    }));
+                    localStorage.removeItem(STORAGE_KEYS.REMEMBER_ME); // پاک کردن remember me
+                }
+                
                 return { success: true, user: user };
             }
 
             setCurrentUser(user) {
                 this.currentUser = user;
                 try {
+                    // همیشه current user رو ذخیره کن برای استفاده در بازی
                     localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify({
                         phone: user.phone,
                         loginTime: new Date().toISOString()
                     }));
-
-                    // ذخیره وضعیت خودکار برای دفعه بعد
-                    localStorage.setItem(STORAGE_KEYS.AUTO_LOGIN, 'true');
 
                     const gameData = {
                         userId: user.id,
@@ -702,17 +729,15 @@
             }
 
             checkAutoLogin() {
-                // بررسی وجود کاربر ذخیره شده
-                const savedUser = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
-                const autoLogin = localStorage.getItem(STORAGE_KEYS.AUTO_LOGIN);
-                
-                if (savedUser && autoLogin === 'true') {
+                // اول بررسی کن remember me هست یا نه
+                const rememberMe = localStorage.getItem(STORAGE_KEYS.REMEMBER_ME);
+                if (rememberMe) {
                     try {
-                        const { phone } = JSON.parse(savedUser);
+                        const { phone } = JSON.parse(rememberMe);
                         const user = this.users[phone];
                         
                         if (user) {
-                            console.log('✅ ورود خودکار انجام شد برای:', phone);
+                            console.log('✅ ورود خودکار (remember me) انجام شد برای:', phone);
                             this.setCurrentUser(user);
                             return user;
                         }
@@ -720,11 +745,30 @@
                         console.error('خطا در ورود خودکار:', e);
                     }
                 }
+                
+                // بعد بررسی کن session هست یا نه
+                const sessionUser = sessionStorage.getItem(STORAGE_KEYS.SESSION_USER);
+                if (sessionUser) {
+                    try {
+                        const { phone } = JSON.parse(sessionUser);
+                        const user = this.users[phone];
+                        
+                        if (user) {
+                            console.log('✅ ورود خودکار (session) انجام شد برای:', phone);
+                            this.setCurrentUser(user);
+                            return user;
+                        }
+                    } catch (e) {
+                        console.error('خطا در ورود خودکار:', e);
+                    }
+                }
+                
                 return null;
             }
 
             logout() {
-                localStorage.removeItem(STORAGE_KEYS.AUTO_LOGIN);
+                localStorage.removeItem(STORAGE_KEYS.REMEMBER_ME);
+                sessionStorage.removeItem(STORAGE_KEYS.SESSION_USER);
                 localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
                 localStorage.removeItem(STORAGE_KEYS.USER_DATA);
             }
@@ -784,21 +828,20 @@
                     const autoLoginMsg = document.getElementById('autoLoginMessage');
                     const loginSection = document.getElementById('login-section');
                     const signupSection = document.getElementById('signup-section');
+                    const tabs = document.querySelector('.tabs');
                     
                     if (autoLoginMsg) autoLoginMsg.style.display = 'block';
                     if (loginSection) loginSection.style.display = 'none';
                     if (signupSection) signupSection.style.display = 'none';
+                    if (tabs) tabs.style.display = 'none';
                     
                     // نمایش پیام خوش‌آمدگویی بر اساس نقش
                     if (user.role === 'creator') {
                         document.getElementById('creatorRoleInfo').style.display = 'flex';
-                        this.showSuccess('خوش آمدید سازنده بازی!');
                     } else if (user.role === 'support') {
                         document.getElementById('supportInfo').style.display = 'flex';
-                        this.showSuccess('خوش آمدید! شما عضو تیم پشتیبانی هستید');
                     } else if (user.role === 'observer') {
                         document.getElementById('observerInfo').style.display = 'flex';
-                        this.showSuccess('خوش آمدید! شما مقام ناظر دارید');
                     }
                     
                     // انتقال به بازی بعد از ۱ ثانیه
@@ -873,6 +916,7 @@
 
                         const phone = document.getElementById('login-phone').value.trim();
                         const password = document.getElementById('login-password').value.trim();
+                        const rememberMe = document.getElementById('remember-me').checked;
 
                         if (!this.validatePhone(phone)) {
                             this.showError('شماره موبایل معتبر نیست (مثال: 09123456789)', 'login-phone-error');
@@ -887,7 +931,7 @@
                         this.showLoading('در حال ورود...');
 
                         setTimeout(() => {
-                            const result = this.userManager.login(phone, password);
+                            const result = this.userManager.login(phone, password, rememberMe);
 
                             if (result.success) {
                                 this.userManager.setCurrentUser(result.user);
@@ -937,6 +981,7 @@
                         const displayName = document.getElementById('display-name').value.trim();
                         const password = document.getElementById('signup-password').value.trim();
                         const age = document.getElementById('age').value;
+                        const rememberMe = document.getElementById('remember-me-signup').checked;
 
                         if (!this.validatePhone(phone)) {
                             this.showError('شماره موبایل معتبر نیست (مثال: 09123456789)', 'signup-phone-error');
@@ -990,6 +1035,20 @@
 
                             this.userManager.users[phone] = newUser;
                             this.userManager.saveUsers();
+                            
+                            // ذخیره وضعیت ورود
+                            if (rememberMe) {
+                                localStorage.setItem(STORAGE_KEYS.REMEMBER_ME, JSON.stringify({
+                                    phone: newUser.phone,
+                                    loginTime: new Date().toISOString()
+                                }));
+                            } else {
+                                sessionStorage.setItem(STORAGE_KEYS.SESSION_USER, JSON.stringify({
+                                    phone: newUser.phone,
+                                    loginTime: new Date().toISOString()
+                                }));
+                            }
+                            
                             this.userManager.setCurrentUser(newUser);
 
                             this.showSuccess('ثبت‌نام موفقیت‌آمیز!');
