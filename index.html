@@ -364,6 +364,111 @@
             border: 1px solid var(--primary-color);
         }
 
+        .ban-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 500px;
+            background: linear-gradient(145deg, #2a0a0a, #1a0505);
+            border: 4px solid #ff5555;
+            border-radius: 30px;
+            padding: 40px 30px;
+            z-index: 50000;
+            display: none;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.8), 0 0 50px rgba(255,85,85,0.5);
+            animation: banPulse 2s infinite;
+            text-align: center;
+        }
+
+        @keyframes banPulse {
+            0% { box-shadow: 0 30px 60px rgba(0,0,0,0.8), 0 0 30px rgba(255,85,85,0.5); }
+            50% { box-shadow: 0 30px 60px rgba(0,0,0,0.8), 0 0 60px rgba(255,85,85,0.8); }
+            100% { box-shadow: 0 30px 60px rgba(0,0,0,0.8), 0 0 30px rgba(255,85,85,0.5); }
+        }
+
+        .ban-icon {
+            font-size: 80px;
+            color: #ff5555;
+            margin-bottom: 20px;
+            animation: shake 0.5s ease-in-out infinite;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(10deg); }
+            75% { transform: rotate(-10deg); }
+        }
+
+        .ban-title {
+            font-size: 36px;
+            font-weight: 900;
+            color: #ff5555;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(255,85,85,0.5);
+        }
+
+        .ban-message-text {
+            font-size: 20px;
+            color: white;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .ban-reason {
+            font-size: 24px;
+            color: #ffaa00;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255,85,85,0.2);
+            border-radius: 15px;
+            border: 2px solid #ff5555;
+            font-weight: 700;
+        }
+
+        .ban-duration-info {
+            font-size: 18px;
+            color: #ff9999;
+            margin-bottom: 30px;
+            padding: 10px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+        }
+
+        .ban-banned-by {
+            font-size: 16px;
+            color: #3b9eff;
+            margin-bottom: 30px;
+        }
+
+        .ban-countdown {
+            font-size: 20px;
+            color: #ffaa00;
+            margin-bottom: 20px;
+            font-family: monospace;
+            letter-spacing: 2px;
+        }
+
+        .ban-close-btn {
+            background: #ff5555;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid #ffaa00;
+        }
+
+        .ban-close-btn:hover {
+            transform: scale(1.1);
+            background: #ff4444;
+            box-shadow: 0 0 30px rgba(255,85,85,0.8);
+        }
+
         @media (max-width: 480px) {
             .auth-card {
                 padding: 30px 25px;
@@ -377,6 +482,18 @@
             .form-group input {
                 padding: 15px;
             }
+            
+            .ban-title {
+                font-size: 28px;
+            }
+            
+            .ban-message-text {
+                font-size: 18px;
+            }
+            
+            .ban-reason {
+                font-size: 20px;
+            }
         }
     </style>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
@@ -386,6 +503,33 @@
     <div class="loading-overlay" id="loadingOverlay">
         <div class="loading-spinner"></div>
         <div class="loading-text" id="loadingText">در حال پردازش...</div>
+    </div>
+
+    <div class="ban-message" id="banMessage">
+        <div class="ban-icon">
+            <i class="fas fa-gavel"></i>
+        </div>
+        <div class="ban-title">
+            ⚠️ بن شدید ⚠️
+        </div>
+        <div class="ban-message-text">
+            شما توسط مدیریت بازی بن شده‌اید
+        </div>
+        <div class="ban-reason" id="banReason">
+            دلیل: تخلف
+        </div>
+        <div class="ban-duration-info" id="banDuration">
+            مدت بن: دائمی
+        </div>
+        <div class="ban-banned-by" id="bannedBy">
+            بن شده توسط: سازنده بازی
+        </div>
+        <div class="ban-countdown" id="banCountdown">
+            
+        </div>
+        <button class="ban-close-btn" onclick="closeBanMessage()">
+            <i class="fas fa-check"></i> متوجه شدم
+        </button>
     </div>
 
     <div class="container">
@@ -559,16 +703,103 @@
             CURRENT_USER: 'mafiaSun_currentUser',
             USER_DATA: 'mafiaSun_userData',
             REMEMBER_ME: 'mafiaSun_rememberMe',
-            LOGGED_IN: 'mafiaSun_loggedIn'
+            LOGGED_IN: 'mafiaSun_loggedIn',
+            BLACKLIST: 'mafiaSun_blacklist',
+            TEMP_BANS: 'mafiaSun_tempBans'
         };
+
+        // ========== تابع نمایش پیام بن ==========
+        function showBanMessage(banInfo) {
+            const banModal = document.getElementById('banMessage');
+            const banReason = document.getElementById('banReason');
+            const banDuration = document.getElementById('banDuration');
+            const bannedBy = document.getElementById('bannedBy');
+            const banCountdown = document.getElementById('banCountdown');
+            
+            banReason.innerHTML = `📝 دلیل: ${banInfo.reason || 'تخلف'}`;
+            bannedBy.innerHTML = `👤 بن شده توسط: ${banInfo.bannedByName || 'مدیریت'}`;
+            
+            if (banInfo.expiry) {
+                const expiryDate = new Date(banInfo.expiry).toLocaleString('fa-IR');
+                banDuration.innerHTML = `⏳ مدت بن: موقت (تا ${expiryDate})`;
+                
+                // شروع شمارش معکوس
+                updateCountdown(banInfo.expiry);
+                setInterval(() => updateCountdown(banInfo.expiry), 1000);
+            } else {
+                banDuration.innerHTML = `🚫 مدت بن: دائمی`;
+                if (banCountdown) banCountdown.style.display = 'none';
+            }
+            
+            banModal.style.display = 'block';
+            
+            // لاگ اوت کردن کاربر
+            localStorage.removeItem(STORAGE_KEYS.LOGGED_IN);
+            localStorage.removeItem(STORAGE_KEYS.REMEMBER_ME);
+            localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+        }
+        
+        function updateCountdown(expiryTime) {
+            const now = Date.now();
+            const diff = expiryTime - now;
+            const banCountdown = document.getElementById('banCountdown');
+            
+            if (diff <= 0) {
+                banCountdown.innerHTML = '⏰ مدت بن به پایان رسیده، می‌توانید دوباره وارد شوید';
+                return;
+            }
+            
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            
+            banCountdown.innerHTML = `⏰ زمان باقی‌مانده: ${hours} ساعت ${minutes} دقیقه ${seconds} ثانیه`;
+        }
+        
+        function closeBanMessage() {
+            document.getElementById('banMessage').style.display = 'none';
+        }
 
         // ========== مدیریت کاربران ==========
         class UserManager {
             constructor() {
                 this.users = this.loadUsers();
                 this.currentUser = null;
+                this.blacklist = this.loadBlacklist();
+                this.tempBannedUsers = this.loadTempBans();
                 this.ensureSpecialUsersExist();
                 this.ensureCreatorExists();
+            }
+
+            loadBlacklist() {
+                try {
+                    const saved = localStorage.getItem(STORAGE_KEYS.BLACKLIST);
+                    return saved ? JSON.parse(saved) : [];
+                } catch (e) {
+                    return [];
+                }
+            }
+
+            loadTempBans() {
+                try {
+                    const saved = localStorage.getItem(STORAGE_KEYS.TEMP_BANS);
+                    if (saved) {
+                        const bans = JSON.parse(saved);
+                        const now = Date.now();
+                        return bans.filter(ban => ban.expiry > now);
+                    }
+                    return [];
+                } catch (e) {
+                    return [];
+                }
+            }
+
+            saveBlacklist() {
+                localStorage.setItem(STORAGE_KEYS.BLACKLIST, JSON.stringify(this.blacklist));
+            }
+
+            saveTempBans() {
+                localStorage.setItem(STORAGE_KEYS.TEMP_BANS, JSON.stringify(this.tempBannedUsers));
             }
 
             ensureCreatorExists() {
@@ -661,11 +892,51 @@
                 return this.users.hasOwnProperty(phone);
             }
 
+            checkUserBan(phone) {
+                const user = this.users[phone];
+                if (!user) return null;
+                
+                // بررسی بن دائمی
+                if (this.blacklist.includes(user.id)) {
+                    return {
+                        banned: true,
+                        permanent: true,
+                        reason: 'بن دائمی توسط مدیریت',
+                        bannedByName: 'مدیریت'
+                    };
+                }
+                
+                // بررسی بن موقت
+                const tempBan = this.tempBannedUsers.find(b => b.userId === user.id);
+                if (tempBan) {
+                    return {
+                        banned: true,
+                        permanent: false,
+                        reason: tempBan.reason,
+                        expiry: tempBan.expiry,
+                        bannedByName: tempBan.bannedByName
+                    };
+                }
+                
+                return null;
+            }
+
             login(phone, password) {
                 const user = this.users[phone];
                 
                 if (!user || user.password !== password) {
                     return { success: false, message: '❌ شماره موبایل یا رمز عبور اشتباه است' };
+                }
+
+                // بررسی بن بودن کاربر
+                const banStatus = this.checkUserBan(phone);
+                if (banStatus) {
+                    return { 
+                        success: false, 
+                        banned: true, 
+                        banInfo: banStatus,
+                        message: '⛔ شما بن شده‌اید' 
+                    };
                 }
 
                 user.lastLogin = new Date().toISOString();
@@ -677,16 +948,13 @@
             setCurrentUser(user, rememberMe = true) {
                 this.currentUser = user;
                 try {
-                    // ذخیره اطلاعات کاربر فعلی
                     localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify({
                         phone: user.phone,
                         loginTime: new Date().toISOString()
                     }));
 
-                    // ذخیره وضعیت لاگین
                     localStorage.setItem(STORAGE_KEYS.LOGGED_IN, 'true');
 
-                    // ذخیره اطلاعات بازی
                     const gameData = {
                         userId: user.id,
                         userPhone: user.phone,
@@ -705,7 +973,6 @@
 
                     localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(gameData));
 
-                    // ذخیره وضعیت remember me
                     if (rememberMe) {
                         localStorage.setItem(STORAGE_KEYS.REMEMBER_ME, 'true');
                     } else {
@@ -723,24 +990,32 @@
             }
 
             checkLoggedIn() {
-                // بررسی وجود لاگین
                 const loggedIn = localStorage.getItem(STORAGE_KEYS.LOGGED_IN);
                 const currentUser = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
                 
                 if (loggedIn === 'true' && currentUser) {
                     try {
                         const { phone } = JSON.parse(currentUser);
-                        const user = this.users[phone];
                         
+                        // بررسی بن بودن کاربر قبل از اجازه ورود
+                        const banStatus = this.checkUserBan(phone);
+                        if (banStatus) {
+                            // پاک کردن اطلاعات لاگین
+                            localStorage.removeItem(STORAGE_KEYS.LOGGED_IN);
+                            localStorage.removeItem(STORAGE_KEYS.REMEMBER_ME);
+                            localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+                            
+                            // نمایش پیام بن
+                            setTimeout(() => {
+                                showBanMessage(banStatus);
+                            }, 500);
+                            
+                            return null;
+                        }
+                        
+                        const user = this.users[phone];
                         if (user) {
                             console.log('✅ کاربر قبلاً وارد شده بود:', phone);
-                            
-                            // بازیابی اطلاعات بازی
-                            const gameData = localStorage.getItem(STORAGE_KEYS.USER_DATA);
-                            if (gameData) {
-                                console.log('✅ اطلاعات بازی بازیابی شد');
-                            }
-                            
                             return user;
                         }
                     } catch (e) {
@@ -755,7 +1030,6 @@
                 localStorage.removeItem(STORAGE_KEYS.LOGGED_IN);
                 localStorage.removeItem(STORAGE_KEYS.REMEMBER_ME);
                 localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
-                // USER_DATA رو پاک نمی‌کنیم چون اطلاعات بازی نیاز هست
             }
         }
 
@@ -809,7 +1083,6 @@
                 const user = this.userManager.checkLoggedIn();
                 
                 if (user) {
-                    // نمایش پیام انتقال خودکار
                     const autoLoginMsg = document.getElementById('autoLoginMessage');
                     const loginSection = document.getElementById('login-section');
                     const signupSection = document.getElementById('signup-section');
@@ -820,7 +1093,6 @@
                     if (signupSection) signupSection.style.display = 'none';
                     if (tabs) tabs.style.display = 'none';
                     
-                    // نمایش پیام خوش‌آمدگویی بر اساس نقش
                     if (user.role === 'creator') {
                         document.getElementById('creatorRoleInfo').style.display = 'flex';
                     } else if (user.role === 'support') {
@@ -829,7 +1101,6 @@
                         document.getElementById('observerInfo').style.display = 'flex';
                     }
                     
-                    // انتقال به بازی بعد از ۱ ثانیه
                     setTimeout(() => {
                         window.location.href = GAME_PAGE_URL;
                     }, 1000);
@@ -923,34 +1194,25 @@
                                 
                                 if (result.user.role === 'creator') {
                                     document.getElementById('creatorRoleInfo').style.display = 'flex';
-                                    document.getElementById('supportInfo').style.display = 'none';
-                                    document.getElementById('observerInfo').style.display = 'none';
-                                    document.getElementById('creatorInfo').style.display = 'none';
                                     this.showSuccess('خوش آمدید سازنده بازی!');
                                 } else if (result.user.role === 'support') {
                                     document.getElementById('supportInfo').style.display = 'flex';
-                                    document.getElementById('creatorRoleInfo').style.display = 'none';
-                                    document.getElementById('observerInfo').style.display = 'none';
-                                    document.getElementById('creatorInfo').style.display = 'none';
                                     this.showSuccess('خوش آمدید! شما عضو تیم پشتیبانی هستید');
                                 } else if (result.user.role === 'observer') {
                                     document.getElementById('observerInfo').style.display = 'flex';
-                                    document.getElementById('creatorRoleInfo').style.display = 'none';
-                                    document.getElementById('supportInfo').style.display = 'none';
-                                    document.getElementById('creatorInfo').style.display = 'none';
                                     this.showSuccess('خوش آمدید! شما مقام ناظر دارید');
                                 } else {
-                                    document.getElementById('creatorRoleInfo').style.display = 'none';
-                                    document.getElementById('supportInfo').style.display = 'none';
-                                    document.getElementById('observerInfo').style.display = 'none';
-                                    document.getElementById('creatorInfo').style.display = 'none';
                                     this.showSuccess('ورود موفقیت‌آمیز!');
                                 }
                                 
                                 setTimeout(() => window.location.href = GAME_PAGE_URL, 1000);
                             } else {
                                 this.hideLoading();
-                                this.showError(result.message, 'login-phone-error');
+                                if (result.banned) {
+                                    showBanMessage(result.banInfo);
+                                } else {
+                                    this.showError(result.message, 'login-phone-error');
+                                }
                             }
                         }, 800);
                     });
@@ -991,7 +1253,6 @@
                         this.showLoading('در حال ثبت‌نام...');
 
                         setTimeout(() => {
-                            // ایجاد کاربر جدید
                             const newUser = {
                                 id: Date.now(),
                                 phone: phone,
@@ -1040,6 +1301,7 @@
             
             window.userManager = userManager;
             window.uiManager = uiManager;
+            window.closeBanMessage = closeBanMessage;
             
             console.log('✅ راه‌اندازی کامل شد');
             console.log('👑 شماره سازنده:', CREATOR_PHONE);
