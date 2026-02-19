@@ -353,6 +353,17 @@
             to { transform: rotate(360deg); }
         }
 
+        .auto-login-message {
+            text-align: center;
+            color: var(--primary-color);
+            font-size: 1rem;
+            margin-top: 20px;
+            padding: 10px;
+            background: rgba(255, 152, 0, 0.1);
+            border-radius: 10px;
+            border: 1px solid var(--primary-color);
+        }
+
         @media (max-width: 480px) {
             .auth-card {
                 padding: 30px 25px;
@@ -398,6 +409,10 @@
 
             <div class="role-box observer" id="observerInfo">
                 <i class="fas fa-check-circle" style="color: #ffaa00;"></i> شما مقام ناظر دارید (تیک نارنجی)
+            </div>
+
+            <div id="autoLoginMessage" class="auto-login-message" style="display: none;">
+                <i class="fas fa-spinner fa-spin"></i> در حال انتقال خودکار به بازی...
             </div>
 
             <div class="tabs">
@@ -532,7 +547,8 @@
         const STORAGE_KEYS = {
             USERS: 'mafiaSun_users',
             CURRENT_USER: 'mafiaSun_currentUser',
-            USER_DATA: 'mafiaSun_userData'
+            USER_DATA: 'mafiaSun_userData',
+            AUTO_LOGIN: 'mafiaSun_autoLogin'
         };
 
         // ========== مدیریت کاربران ==========
@@ -654,6 +670,9 @@
                         loginTime: new Date().toISOString()
                     }));
 
+                    // ذخیره وضعیت خودکار برای دفعه بعد
+                    localStorage.setItem(STORAGE_KEYS.AUTO_LOGIN, 'true');
+
                     const gameData = {
                         userId: user.id,
                         userPhone: user.phone,
@@ -681,6 +700,34 @@
                     console.error('خطا در ذخیره کاربر فعلی:', e);
                 }
             }
+
+            checkAutoLogin() {
+                // بررسی وجود کاربر ذخیره شده
+                const savedUser = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
+                const autoLogin = localStorage.getItem(STORAGE_KEYS.AUTO_LOGIN);
+                
+                if (savedUser && autoLogin === 'true') {
+                    try {
+                        const { phone } = JSON.parse(savedUser);
+                        const user = this.users[phone];
+                        
+                        if (user) {
+                            console.log('✅ ورود خودکار انجام شد برای:', phone);
+                            this.setCurrentUser(user);
+                            return user;
+                        }
+                    } catch (e) {
+                        console.error('خطا در ورود خودکار:', e);
+                    }
+                }
+                return null;
+            }
+
+            logout() {
+                localStorage.removeItem(STORAGE_KEYS.AUTO_LOGIN);
+                localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+                localStorage.removeItem(STORAGE_KEYS.USER_DATA);
+            }
         }
 
         // ========== مدیریت رابط کاربری ==========
@@ -690,6 +737,7 @@
                 this.initTabs();
                 this.initAgeSelector();
                 this.initForms();
+                this.checkAutoLogin();
             }
 
             showLoading(message = 'در حال پردازش...') {
@@ -726,6 +774,38 @@
 
             clearErrors() {
                 document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
+            }
+
+            checkAutoLogin() {
+                const user = this.userManager.checkAutoLogin();
+                
+                if (user) {
+                    // نمایش پیام انتقال خودکار
+                    const autoLoginMsg = document.getElementById('autoLoginMessage');
+                    const loginSection = document.getElementById('login-section');
+                    const signupSection = document.getElementById('signup-section');
+                    
+                    if (autoLoginMsg) autoLoginMsg.style.display = 'block';
+                    if (loginSection) loginSection.style.display = 'none';
+                    if (signupSection) signupSection.style.display = 'none';
+                    
+                    // نمایش پیام خوش‌آمدگویی بر اساس نقش
+                    if (user.role === 'creator') {
+                        document.getElementById('creatorRoleInfo').style.display = 'flex';
+                        this.showSuccess('خوش آمدید سازنده بازی!');
+                    } else if (user.role === 'support') {
+                        document.getElementById('supportInfo').style.display = 'flex';
+                        this.showSuccess('خوش آمدید! شما عضو تیم پشتیبانی هستید');
+                    } else if (user.role === 'observer') {
+                        document.getElementById('observerInfo').style.display = 'flex';
+                        this.showSuccess('خوش آمدید! شما مقام ناظر دارید');
+                    }
+                    
+                    // انتقال به بازی بعد از ۱ ثانیه
+                    setTimeout(() => {
+                        window.location.href = GAME_PAGE_URL;
+                    }, 1000);
+                }
             }
 
             initTabs() {
@@ -843,6 +923,78 @@
                                 this.hideLoading();
                                 this.showError(result.message, 'login-phone-error');
                             }
+                        }, 800);
+                    });
+                }
+
+                const signupForm = document.getElementById('signupForm');
+                if (signupForm) {
+                    signupForm.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        this.clearErrors();
+
+                        const phone = document.getElementById('signup-phone').value.trim();
+                        const displayName = document.getElementById('display-name').value.trim();
+                        const password = document.getElementById('signup-password').value.trim();
+                        const age = document.getElementById('age').value;
+
+                        if (!this.validatePhone(phone)) {
+                            this.showError('شماره موبایل معتبر نیست (مثال: 09123456789)', 'signup-phone-error');
+                            return;
+                        }
+
+                        if (displayName.length < 3) {
+                            this.showError('نام نمایشی باید حداقل ۳ کاراکتر باشد', 'display-name-error');
+                            return;
+                        }
+
+                        if (password.length < 8) {
+                            this.showError('رمز عبور باید حداقل ۸ کاراکتر باشد', 'signup-password-error');
+                            return;
+                        }
+
+                        if (this.userManager.isPhoneExists(phone)) {
+                            this.showError('این شماره موبایل قبلاً ثبت‌نام کرده است', 'signup-phone-error');
+                            return;
+                        }
+
+                        this.showLoading('در حال ثبت‌نام...');
+
+                        setTimeout(() => {
+                            // ایجاد کاربر جدید
+                            const newUser = {
+                                id: Date.now(),
+                                phone: phone,
+                                password: password,
+                                name: displayName,
+                                age: parseInt(age),
+                                role: 'normal',
+                                hasBlueTick: false,
+                                hasOrangeTick: false,
+                                gems: 100,
+                                coins: 600,
+                                registeredAt: new Date().toISOString(),
+                                lastLogin: new Date().toISOString(),
+                                stats: {
+                                    wins: 0,
+                                    losses: 0,
+                                    gamesPlayed: 0,
+                                    totalHours: 0
+                                },
+                                settings: {
+                                    avatar: 'avatar1',
+                                    ownedAvatars: ['avatar1', 'avatar2'],
+                                    editCount: 0
+                                }
+                            };
+
+                            this.userManager.users[phone] = newUser;
+                            this.userManager.saveUsers();
+                            this.userManager.setCurrentUser(newUser);
+
+                            this.showSuccess('ثبت‌نام موفقیت‌آمیز!');
+                            
+                            setTimeout(() => window.location.href = GAME_PAGE_URL, 1000);
                         }, 800);
                     });
                 }
