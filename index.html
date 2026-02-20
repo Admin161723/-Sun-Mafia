@@ -34,6 +34,7 @@
             --success-green: #4CAF50;
             --support-blue: #3b9eff;
             --observer-orange: #ffaa00;
+            --admin-brown: #8B4513;
             --creator-blue: #3b9eff;
         }
 
@@ -307,6 +308,11 @@
         .role-box.observer {
             border-color: var(--observer-orange);
             color: var(--observer-orange);
+        }
+
+        .role-box.admin {
+            border-color: var(--admin-brown);
+            color: var(--admin-brown);
         }
 
         .role-box.creator {
@@ -666,6 +672,10 @@
                 <i class="fas fa-check-circle" style="color: #ffaa00;"></i> شما مقام ناظر دارید (تیک نارنجی)
             </div>
 
+            <div class="role-box admin" id="adminInfo">
+                <i class="fas fa-check-circle" style="color: #8B4513;"></i> شما مقام ادمین دارید (تیک قهوه‌ای)
+            </div>
+
             <div id="autoLoginMessage" class="auto-login-message" style="display: none;">
                 <i class="fas fa-spinner fa-spin"></i> در حال انتقال خودکار به بازی...
             </div>
@@ -707,10 +717,6 @@
                         <i class="fas fa-door-open"></i> ورود و شروع بازی
                     </button>
                 </form>
-                
-                <button class="clear-data-btn" onclick="clearAllData()">
-                    <i class="fas fa-trash"></i> پاک کردن همه داده‌ها
-                </button>
             </div>
 
             <div id="signup-section" class="form-section">
@@ -775,7 +781,7 @@
         const CREATOR_PHONE = '09904844031';
         const CREATOR_PASSWORD = 'Admin16172-matin-1000';
 
-        // ========== کاربران ویژه ==========
+        // ========== کاربران ویژه (شامل ادمین‌ها) ==========
         const SPECIAL_USERS = [
             {
                 phone: '09940940720',
@@ -786,7 +792,8 @@
                 password: 'Erfan.sh85',
                 role: 'support',
                 hasBlueTick: true,
-                hasOrangeTick: false
+                hasOrangeTick: false,
+                hasBrownTick: false
             },
             {
                 phone: '09212327833',
@@ -797,7 +804,8 @@
                 password: '010101010',
                 role: 'support',
                 hasBlueTick: true,
-                hasOrangeTick: false
+                hasOrangeTick: false,
+                hasBrownTick: false
             },
             {
                 phone: '09053065179',
@@ -808,7 +816,32 @@
                 password: 'amirhosein1386',
                 role: 'observer',
                 hasBlueTick: false,
-                hasOrangeTick: true
+                hasOrangeTick: true,
+                hasBrownTick: false
+            },
+            {
+                phone: '09392865423',
+                userId: 50,
+                name: 'ʝᴀᴅᴜᴳᴀʀ',
+                gems: 800,
+                coins: 2000,
+                password: 'mehdii137123',
+                role: 'admin',
+                hasBlueTick: false,
+                hasOrangeTick: false,
+                hasBrownTick: true
+            },
+            {
+                phone: '09305075756',
+                userId: 51,
+                name: 'FARZAM',
+                gems: 800,
+                coins: 2000,
+                password: '123456789',
+                role: 'admin',
+                hasBlueTick: false,
+                hasOrangeTick: false,
+                hasBrownTick: true
             }
         ];
 
@@ -820,10 +853,12 @@
             REMEMBER_ME: 'mafiaSun_rememberMe',
             LOGGED_IN: 'mafiaSun_loggedIn',
             BLACKLIST: 'mafiaSun_blacklist',
-            TEMP_BANS: 'mafiaSun_tempBans'
+            TEMP_BANS: 'mafiaSun_tempBans',
+            REPORTS: 'mafiaSun_reports',
+            ADMIN_BANS: 'mafiaSun_adminBans'
         };
 
-        // ========== توابع کمکی ==========
+        // ========== تابع پاک کردن همه داده‌ها ==========
         function clearAllData() {
             if (confirm('آیا از پاک کردن همه داده‌ها اطمینان دارید؟ این عمل غیرقابل بازگشت است!')) {
                 localStorage.clear();
@@ -844,7 +879,6 @@
             banReason.innerHTML = `📝 دلیل: ${banInfo.reason || 'تخلف'}`;
             bannedBy.innerHTML = `👤 بن شده توسط: ${banInfo.bannedByName || 'مدیریت'}`;
             
-            // پاک کردن کامل تمام اطلاعات لاگین
             localStorage.removeItem(STORAGE_KEYS.LOGGED_IN);
             localStorage.removeItem(STORAGE_KEYS.REMEMBER_ME);
             localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
@@ -916,7 +950,6 @@
         }
 
         function checkForMessagesOnLoad() {
-            // بررسی پیام بن
             const banInfo = sessionStorage.getItem('banInfo');
             if (banInfo) {
                 try {
@@ -928,7 +961,6 @@
                 }
             }
             
-            // بررسی پیام گزارش
             const reportInfo = sessionStorage.getItem('reportInfo');
             if (reportInfo) {
                 try {
@@ -948,6 +980,7 @@
                 this.currentUser = null;
                 this.blacklist = this.loadBlacklist();
                 this.tempBannedUsers = this.loadTempBans();
+                this.adminBannedUsers = this.loadAdminBans();
                 this.ensureSpecialUsersExist();
                 this.ensureCreatorExists();
             }
@@ -979,12 +1012,34 @@
                 }
             }
 
+            loadAdminBans() {
+                try {
+                    const saved = localStorage.getItem(STORAGE_KEYS.ADMIN_BANS);
+                    if (saved) {
+                        const bans = JSON.parse(saved);
+                        const now = Date.now();
+                        const activeBans = bans.filter(ban => ban.expiry > now);
+                        if (activeBans.length !== bans.length) {
+                            localStorage.setItem(STORAGE_KEYS.ADMIN_BANS, JSON.stringify(activeBans));
+                        }
+                        return activeBans;
+                    }
+                    return [];
+                } catch (e) {
+                    return [];
+                }
+            }
+
             saveBlacklist() {
                 localStorage.setItem(STORAGE_KEYS.BLACKLIST, JSON.stringify(this.blacklist));
             }
 
             saveTempBans() {
                 localStorage.setItem(STORAGE_KEYS.TEMP_BANS, JSON.stringify(this.tempBannedUsers));
+            }
+
+            saveAdminBans() {
+                localStorage.setItem(STORAGE_KEYS.ADMIN_BANS, JSON.stringify(this.adminBannedUsers));
             }
 
             ensureCreatorExists() {
@@ -998,16 +1053,12 @@
                         role: 'creator',
                         hasBlueTick: true,
                         hasOrangeTick: false,
+                        hasBrownTick: false,
                         gems: Infinity,
                         coins: Infinity,
                         registeredAt: new Date().toISOString(),
                         lastLogin: null,
-                        stats: {
-                            wins: 0,
-                            losses: 0,
-                            gamesPlayed: 0,
-                            totalHours: 0
-                        },
+                        stats: { wins: 0, losses: 0, gamesPlayed: 0, totalHours: 0 },
                         settings: {
                             avatar: 'avatar1',
                             ownedAvatars: ['avatar1', 'avatar2', 'ninja', 'samurai', 'avatar5', 'avatar6', 'avatar7', 'avatar8', 'avatar9', 'avatar10', 'avatar11', 'avatar12'],
@@ -1031,20 +1082,18 @@
                             role: specialUser.role,
                             hasBlueTick: specialUser.hasBlueTick || false,
                             hasOrangeTick: specialUser.hasOrangeTick || false,
+                            hasBrownTick: specialUser.hasBrownTick || false,
                             gems: specialUser.gems,
                             coins: specialUser.coins,
                             registeredAt: new Date().toISOString(),
                             lastLogin: null,
-                            stats: {
-                                wins: 0,
-                                losses: 0,
-                                gamesPlayed: 0,
-                                totalHours: 0
-                            },
+                            stats: { wins: 0, losses: 0, gamesPlayed: 0, totalHours: 0 },
                             settings: {
                                 avatar: 'avatar1',
-                                ownedAvatars: specialUser.role === 'support' ? 
+                                ownedAvatars: specialUser.role === 'support' || specialUser.role === 'creator' ? 
                                     ['avatar1', 'avatar2', 'ninja', 'samurai', 'avatar5', 'avatar6', 'avatar7', 'avatar8'] : 
+                                    specialUser.role === 'admin' ?
+                                    ['avatar1', 'avatar2', 'ninja', 'samurai', 'avatar5', 'avatar6'] :
                                     ['avatar1', 'avatar2', 'ninja', 'samurai'],
                                 editCount: 0
                             }
@@ -1101,6 +1150,18 @@
                     };
                 }
                 
+                const adminBan = this.adminBannedUsers.find(b => b.userId === user.id);
+                if (adminBan) {
+                    return {
+                        banned: true,
+                        permanent: false,
+                        reason: adminBan.reason,
+                        expiry: adminBan.expiry,
+                        bannedByName: adminBan.bannedByName,
+                        isAdminBan: true
+                    };
+                }
+                
                 return null;
             }
 
@@ -1144,6 +1205,7 @@
                         userRole: user.role,
                         hasBlueTick: user.hasBlueTick,
                         hasOrangeTick: user.hasOrangeTick,
+                        hasBrownTick: user.hasBrownTick,
                         isCreator: user.role === 'creator' || user.role === 'support',
                         userGems: user.gems,
                         userCoins: user.coins,
@@ -1159,6 +1221,12 @@
                         localStorage.setItem(STORAGE_KEYS.REMEMBER_ME, 'true');
                     } else {
                         localStorage.removeItem(STORAGE_KEYS.REMEMBER_ME);
+                    }
+
+                    if (user.role === 'creator' || user.role === 'support') {
+                        localStorage.setItem('mafiaUserId', user.id.toString());
+                        localStorage.setItem('mafiaIsCreator', 'true');
+                        localStorage.setItem('mafiaUserName', user.name);
                     }
                 } catch (e) {
                     console.error('خطا در ذخیره کاربر فعلی:', e);
@@ -1200,6 +1268,12 @@
                 }
                 
                 return null;
+            }
+
+            logout() {
+                localStorage.removeItem(STORAGE_KEYS.LOGGED_IN);
+                localStorage.removeItem(STORAGE_KEYS.REMEMBER_ME);
+                localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
             }
         }
 
@@ -1272,6 +1346,8 @@
                         document.getElementById('supportInfo').style.display = 'flex';
                     } else if (user.role === 'observer') {
                         document.getElementById('observerInfo').style.display = 'flex';
+                    } else if (user.role === 'admin') {
+                        document.getElementById('adminInfo').style.display = 'flex';
                     }
                     
                     setTimeout(() => {
@@ -1374,6 +1450,9 @@
                                 } else if (result.user.role === 'observer') {
                                     document.getElementById('observerInfo').style.display = 'flex';
                                     this.showSuccess('خوش آمدید! شما مقام ناظر دارید');
+                                } else if (result.user.role === 'admin') {
+                                    document.getElementById('adminInfo').style.display = 'flex';
+                                    this.showSuccess('خوش آمدید! شما مقام ادمین هستید');
                                 } else {
                                     this.showSuccess('ورود موفقیت‌آمیز!');
                                 }
@@ -1436,16 +1515,12 @@
                                 role: 'normal',
                                 hasBlueTick: false,
                                 hasOrangeTick: false,
+                                hasBrownTick: false,
                                 gems: 100,
                                 coins: 600,
                                 registeredAt: new Date().toISOString(),
                                 lastLogin: new Date().toISOString(),
-                                stats: {
-                                    wins: 0,
-                                    losses: 0,
-                                    gamesPlayed: 0,
-                                    totalHours: 0
-                                },
+                                stats: { wins: 0, losses: 0, gamesPlayed: 0, totalHours: 0 },
                                 settings: {
                                     avatar: 'avatar1',
                                     ownedAvatars: ['avatar1', 'avatar2'],
