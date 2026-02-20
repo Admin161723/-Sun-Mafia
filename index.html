@@ -751,11 +751,8 @@
             banReason.innerHTML = `📝 دلیل: ${banInfo.reason || 'تخلف'}`;
             bannedBy.innerHTML = `👤 بن شده توسط: ${banInfo.bannedByName || 'مدیریت'}`;
             
-            // پاک کردن کامل اطلاعات لاگین
-            localStorage.removeItem(STORAGE_KEYS.LOGGED_IN);
-            localStorage.removeItem(STORAGE_KEYS.REMEMBER_ME);
-            localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
-            localStorage.removeItem(STORAGE_KEYS.USER_DATA);
+            // پاک کردن کامل تمام اطلاعات لاگین
+            localStorage.clear();
             sessionStorage.clear();
             
             if (banInfo.expiry) {
@@ -803,7 +800,7 @@
         
         function closeBanMessage() {
             document.getElementById('banMessage').style.display = 'none';
-            // بعد از بستن پیام بن، صفحه را رفرش کن
+            // بعد از بستن پیام بن، صفحه را رفرش کن تا فرم ورود نمایش داده بشه
             window.location.reload();
         }
 
@@ -1043,39 +1040,43 @@
                 }
             }
 
+            // این تابع در ابتدای بارگذاری صفحه بررسی می‌کنه که کاربر قبلاً لاگین کرده یا نه
             checkLoggedIn() {
                 const loggedIn = localStorage.getItem(STORAGE_KEYS.LOGGED_IN);
                 const currentUser = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
                 
-                if (loggedIn === 'true' && currentUser) {
-                    try {
-                        const { phone } = JSON.parse(currentUser);
+                // اگر هیچ اطلاعات لاگینی وجود نداره، کاربر لاگین نیست
+                if (loggedIn !== 'true' || !currentUser) {
+                    return null;
+                }
+                
+                try {
+                    const { phone } = JSON.parse(currentUser);
+                    
+                    // بررسی بن بودن کاربر قبل از اجازه ورود
+                    const banStatus = this.checkUserBan(phone);
+                    if (banStatus) {
+                        // پاک کردن کامل اطلاعات لاگین
+                        localStorage.removeItem(STORAGE_KEYS.LOGGED_IN);
+                        localStorage.removeItem(STORAGE_KEYS.REMEMBER_ME);
+                        localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+                        localStorage.removeItem(STORAGE_KEYS.USER_DATA);
                         
-                        // بررسی بن بودن کاربر قبل از اجازه ورود
-                        const banStatus = this.checkUserBan(phone);
-                        if (banStatus) {
-                            // پاک کردن کامل اطلاعات لاگین
-                            localStorage.removeItem(STORAGE_KEYS.LOGGED_IN);
-                            localStorage.removeItem(STORAGE_KEYS.REMEMBER_ME);
-                            localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
-                            localStorage.removeItem(STORAGE_KEYS.USER_DATA);
-                            
-                            // نمایش پیام بن
-                            setTimeout(() => {
-                                showBanMessage(banStatus);
-                            }, 500);
-                            
-                            return null;
-                        }
+                        // نمایش پیام بن
+                        setTimeout(() => {
+                            showBanMessage(banStatus);
+                        }, 500);
                         
-                        const user = this.users[phone];
-                        if (user) {
-                            console.log('✅ کاربر قبلاً وارد شده بود:', phone);
-                            return user;
-                        }
-                    } catch (e) {
-                        console.error('خطا در بررسی لاگین:', e);
+                        return null;
                     }
+                    
+                    const user = this.users[phone];
+                    if (user) {
+                        console.log('✅ کاربر قبلاً وارد شده بود:', phone);
+                        return user;
+                    }
+                } catch (e) {
+                    console.error('خطا در بررسی لاگین:', e);
                 }
                 
                 return null;
@@ -1095,7 +1096,11 @@
                 this.initTabs();
                 this.initAgeSelector();
                 this.initForms();
-                this.checkLoggedIn();
+                
+                // بررسی لاگین بعد از راه‌اندازی کامل
+                setTimeout(() => {
+                    this.checkLoggedIn();
+                }, 100);
             }
 
             showLoading(message = 'در حال پردازش...') {
