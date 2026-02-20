@@ -382,6 +382,23 @@
             display: none;
         }
 
+        .report-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 600px;
+            background: linear-gradient(145deg, #1a2a0a, #0f1a05);
+            border: 4px solid #4CAF50;
+            border-radius: 30px;
+            padding: 40px 30px;
+            z-index: 100000;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.8), 0 0 50px rgba(76,175,80,0.5);
+            text-align: center;
+            display: none;
+        }
+
         @keyframes banPulse {
             0% { box-shadow: 0 30px 60px rgba(0,0,0,0.8), 0 0 30px rgba(255,85,85,0.5); }
             50% { box-shadow: 0 30px 60px rgba(0,0,0,0.8), 0 0 60px rgba(255,85,85,0.8); }
@@ -395,10 +412,22 @@
             animation: shake 0.5s ease-in-out infinite;
         }
 
+        .report-icon {
+            font-size: 80px;
+            color: #4CAF50;
+            margin-bottom: 20px;
+            animation: bounce 1s ease-in-out infinite;
+        }
+
         @keyframes shake {
             0%, 100% { transform: rotate(0deg); }
             25% { transform: rotate(10deg); }
             75% { transform: rotate(-10deg); }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
         }
 
         .ban-title {
@@ -407,6 +436,14 @@
             color: #ff5555;
             margin-bottom: 20px;
             text-shadow: 0 0 20px rgba(255,85,85,0.5);
+        }
+
+        .report-title {
+            font-size: 36px;
+            font-weight: 900;
+            color: #4CAF50;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(76,175,80,0.5);
         }
 
         .ban-message-text {
@@ -425,6 +462,21 @@
             border-radius: 15px;
             border: 2px solid #ff5555;
             font-weight: 700;
+        }
+
+        .report-details {
+            font-size: 18px;
+            color: white;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(76,175,80,0.2);
+            border-radius: 15px;
+            border: 2px solid #4CAF50;
+            text-align: right;
+        }
+
+        .report-details div {
+            margin-bottom: 10px;
         }
 
         .ban-duration-info {
@@ -463,10 +515,29 @@
             border: 2px solid #ffaa00;
         }
 
+        .report-close-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid #ffaa00;
+        }
+
         .ban-close-btn:hover {
             transform: scale(1.1);
             background: #ff4444;
             box-shadow: 0 0 30px rgba(255,85,85,0.8);
+        }
+
+        .report-close-btn:hover {
+            transform: scale(1.1);
+            background: #45a049;
+            box-shadow: 0 0 30px rgba(76,175,80,0.8);
         }
 
         .clear-data-btn {
@@ -523,14 +594,15 @@
         <div class="loading-text" id="loadingText">در حال پردازش...</div>
     </div>
 
+    <!-- پیام بن -->
     <div class="ban-message" id="banMessage">
         <div class="ban-icon">
             <i class="fas fa-gavel"></i>
         </div>
-        <div class="ban-title">
+        <div class="ban-title" id="banTitle">
             ⚠️ بن شدید ⚠️
         </div>
-        <div class="ban-message-text">
+        <div class="ban-message-text" id="banMessageText">
             شما توسط مدیریت بازی بن شده‌اید
         </div>
         <div class="ban-reason" id="banReason">
@@ -546,6 +618,27 @@
             
         </div>
         <button class="ban-close-btn" onclick="closeBanMessage()">
+            <i class="fas fa-check"></i> متوجه شدم
+        </button>
+    </div>
+
+    <!-- پیام گزارش -->
+    <div class="report-message" id="reportMessage">
+        <div class="report-icon">
+            <i class="fas fa-flag"></i>
+        </div>
+        <div class="report-title" id="reportTitle">
+            📋 گزارش ارسال شد
+        </div>
+        <div class="ban-message-text" id="reportMessageText">
+            گزارش شما با موفقیت به مدیریت ارسال شد
+        </div>
+        <div class="report-details" id="reportDetails">
+            <div><i class="fas fa-user"></i> <span id="reportedUserName">کاربر</span></div>
+            <div><i class="fas fa-tag"></i> <span id="reportReason">بی احترامی</span></div>
+            <div><i class="fas fa-align-left"></i> <span id="reportDescription">توضیحات</span></div>
+        </div>
+        <button class="report-close-btn" onclick="closeReportMessage()">
             <i class="fas fa-check"></i> متوجه شدم
         </button>
     </div>
@@ -616,7 +709,7 @@
                 </form>
                 
                 <button class="clear-data-btn" onclick="clearAllData()">
-                    <i class="fas fa-trash"></i> پاک کردن همه داده‌ها (برای رفع مشکل ورود خودکار بن)
+                    <i class="fas fa-trash"></i> پاک کردن همه داده‌ها
                 </button>
             </div>
 
@@ -730,7 +823,7 @@
             TEMP_BANS: 'mafiaSun_tempBans'
         };
 
-        // ========== تابع پاک کردن همه داده‌ها ==========
+        // ========== توابع کمکی ==========
         function clearAllData() {
             if (confirm('آیا از پاک کردن همه داده‌ها اطمینان دارید؟ این عمل غیرقابل بازگشت است!')) {
                 localStorage.clear();
@@ -740,7 +833,7 @@
             }
         }
 
-        // ========== تابع نمایش پیام بن ==========
+        // ========== توابع نمایش پیام ==========
         function showBanMessage(banInfo) {
             const banModal = document.getElementById('banMessage');
             const banReason = document.getElementById('banReason');
@@ -752,18 +845,17 @@
             bannedBy.innerHTML = `👤 بن شده توسط: ${banInfo.bannedByName || 'مدیریت'}`;
             
             // پاک کردن کامل تمام اطلاعات لاگین
-            localStorage.clear();
-            sessionStorage.clear();
+            localStorage.removeItem(STORAGE_KEYS.LOGGED_IN);
+            localStorage.removeItem(STORAGE_KEYS.REMEMBER_ME);
+            localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+            localStorage.removeItem(STORAGE_KEYS.USER_DATA);
             
             if (banInfo.expiry) {
                 const expiryDate = new Date(banInfo.expiry).toLocaleString('fa-IR');
                 banDuration.innerHTML = `⏳ مدت بن: موقت (تا ${expiryDate})`;
                 
-                // شروع شمارش معکوس
                 updateCountdown(banInfo.expiry);
                 const interval = setInterval(() => updateCountdown(banInfo.expiry), 1000);
-                
-                // ذخیره interval برای پاک کردن بعداً
                 window.banInterval = interval;
             } else {
                 banDuration.innerHTML = `🚫 مدت بن: دائمی`;
@@ -772,10 +864,26 @@
             
             banModal.style.display = 'block';
             
-            // مخفی کردن فرم ورود
             document.getElementById('login-section').style.display = 'none';
             document.getElementById('signup-section').style.display = 'none';
             document.querySelector('.tabs').style.display = 'none';
+        }
+        
+        function showReportMessage(reportInfo) {
+            const reportModal = document.getElementById('reportMessage');
+            const reportedUserName = document.getElementById('reportedUserName');
+            const reportReason = document.getElementById('reportReason');
+            const reportDescription = document.getElementById('reportDescription');
+            
+            reportedUserName.innerHTML = `👤 کاربر گزارش شده: ${reportInfo.reportedName}`;
+            reportReason.innerHTML = `🏷️ دلیل: ${reportInfo.reason}`;
+            reportDescription.innerHTML = `📝 توضیحات: ${reportInfo.description}`;
+            
+            reportModal.style.display = 'block';
+            
+            setTimeout(() => {
+                reportModal.style.display = 'none';
+            }, 5000);
         }
         
         function updateCountdown(expiryTime) {
@@ -800,8 +908,37 @@
         
         function closeBanMessage() {
             document.getElementById('banMessage').style.display = 'none';
-            // بعد از بستن پیام بن، صفحه را رفرش کن تا فرم ورود نمایش داده بشه
             window.location.reload();
+        }
+        
+        function closeReportMessage() {
+            document.getElementById('reportMessage').style.display = 'none';
+        }
+
+        function checkForMessagesOnLoad() {
+            // بررسی پیام بن
+            const banInfo = sessionStorage.getItem('banInfo');
+            if (banInfo) {
+                try {
+                    const ban = JSON.parse(banInfo);
+                    showBanMessage(ban);
+                    sessionStorage.removeItem('banInfo');
+                } catch (e) {
+                    console.error('خطا در پارس banInfo:', e);
+                }
+            }
+            
+            // بررسی پیام گزارش
+            const reportInfo = sessionStorage.getItem('reportInfo');
+            if (reportInfo) {
+                try {
+                    const report = JSON.parse(reportInfo);
+                    showReportMessage(report);
+                    sessionStorage.removeItem('reportInfo');
+                } catch (e) {
+                    console.error('خطا در پارس reportInfo:', e);
+                }
+            }
         }
 
         // ========== مدیریت کاربران ==========
@@ -830,9 +967,7 @@
                     if (saved) {
                         const bans = JSON.parse(saved);
                         const now = Date.now();
-                        // فیلتر کردن بن‌های منقضی شده
                         const activeBans = bans.filter(ban => ban.expiry > now);
-                        // ذخیره مجدد بن‌های فعال
                         if (activeBans.length !== bans.length) {
                             localStorage.setItem(STORAGE_KEYS.TEMP_BANS, JSON.stringify(activeBans));
                         }
@@ -946,7 +1081,6 @@
                 const user = this.users[phone];
                 if (!user) return null;
                 
-                // بررسی بن دائمی
                 if (this.blacklist.includes(user.id)) {
                     return {
                         banned: true,
@@ -956,7 +1090,6 @@
                     };
                 }
                 
-                // بررسی بن موقت
                 const tempBan = this.tempBannedUsers.find(b => b.userId === user.id);
                 if (tempBan) {
                     return {
@@ -978,7 +1111,6 @@
                     return { success: false, message: '❌ شماره موبایل یا رمز عبور اشتباه است' };
                 }
 
-                // بررسی بن بودن کاربر
                 const banStatus = this.checkUserBan(phone);
                 if (banStatus) {
                     return { 
@@ -998,7 +1130,6 @@
             setCurrentUser(user, rememberMe = true) {
                 this.currentUser = user;
                 try {
-                    // ذخیره اطلاعات کاربر فعلی
                     localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify({
                         phone: user.phone,
                         loginTime: new Date().toISOString()
@@ -1029,23 +1160,15 @@
                     } else {
                         localStorage.removeItem(STORAGE_KEYS.REMEMBER_ME);
                     }
-
-                    if (user.role === 'creator' || user.role === 'support') {
-                        localStorage.setItem('mafiaUserId', user.id.toString());
-                        localStorage.setItem('mafiaIsCreator', 'true');
-                        localStorage.setItem('mafiaUserName', user.name);
-                    }
                 } catch (e) {
                     console.error('خطا در ذخیره کاربر فعلی:', e);
                 }
             }
 
-            // این تابع در ابتدای بارگذاری صفحه بررسی می‌کنه که کاربر قبلاً لاگین کرده یا نه
             checkLoggedIn() {
                 const loggedIn = localStorage.getItem(STORAGE_KEYS.LOGGED_IN);
                 const currentUser = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
                 
-                // اگر هیچ اطلاعات لاگینی وجود نداره، کاربر لاگین نیست
                 if (loggedIn !== 'true' || !currentUser) {
                     return null;
                 }
@@ -1053,16 +1176,13 @@
                 try {
                     const { phone } = JSON.parse(currentUser);
                     
-                    // بررسی بن بودن کاربر قبل از اجازه ورود
                     const banStatus = this.checkUserBan(phone);
                     if (banStatus) {
-                        // پاک کردن کامل اطلاعات لاگین
                         localStorage.removeItem(STORAGE_KEYS.LOGGED_IN);
                         localStorage.removeItem(STORAGE_KEYS.REMEMBER_ME);
                         localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
                         localStorage.removeItem(STORAGE_KEYS.USER_DATA);
                         
-                        // نمایش پیام بن
                         setTimeout(() => {
                             showBanMessage(banStatus);
                         }, 500);
@@ -1081,12 +1201,6 @@
                 
                 return null;
             }
-
-            logout() {
-                localStorage.removeItem(STORAGE_KEYS.LOGGED_IN);
-                localStorage.removeItem(STORAGE_KEYS.REMEMBER_ME);
-                localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
-            }
         }
 
         // ========== مدیریت رابط کاربری ==========
@@ -1097,7 +1211,6 @@
                 this.initAgeSelector();
                 this.initForms();
                 
-                // بررسی لاگین بعد از راه‌اندازی کامل
                 setTimeout(() => {
                     this.checkLoggedIn();
                 }, 100);
@@ -1269,7 +1382,6 @@
                             } else {
                                 this.hideLoading();
                                 if (result.banned) {
-                                    // پاک کردن هرگونه اطلاعات لاگین قبلی
                                     this.userManager.logout();
                                     showBanMessage(result.banInfo);
                                 } else {
@@ -1358,12 +1470,15 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 راه‌اندازی صفحه ثبت‌نام...');
             
+            checkForMessagesOnLoad();
+            
             const userManager = new UserManager();
             const uiManager = new UIManager(userManager);
             
             window.userManager = userManager;
             window.uiManager = uiManager;
             window.closeBanMessage = closeBanMessage;
+            window.closeReportMessage = closeReportMessage;
             window.clearAllData = clearAllData;
             
             console.log('✅ راه‌اندازی کامل شد');
